@@ -43,7 +43,9 @@ REF_PREFIX = "bokio-"
 ODOO_FIELDS = [
     "name", "email", "phone",
     "street", "street2", "zip", "city", "country_id",
-    "vat", "is_company", "personnummer", "ref",
+    "vat", "is_company", "personnummer",
+    "bokio_id", "bokio_master",           # från partner_bokio-modulen
+    "ref",                                 # fallback om modulen ej installerad
 ]
 
 
@@ -96,11 +98,15 @@ def bokio_id_from_customer(cust: dict) -> str | None:
     return cust.get("id") or cust.get("customerId")
 
 
-def write_ref_to_odoo(conn, partner_id: int, bokio_id: str, dry_run: bool) -> None:
+def write_bokio_id_to_odoo(conn, partner_id: int, bokio_id: str, dry_run: bool) -> None:
     if dry_run:
         return
     Partner = conn["res.partner"]
-    Partner.write([partner_id], {"ref": f"{REF_PREFIX}{bokio_id}"})
+    # Write to bokio_id if partner_bokio module is installed, otherwise fall back to ref
+    try:
+        Partner.write([partner_id], {"bokio_id": bokio_id})
+    except Exception:
+        Partner.write([partner_id], {"ref": f"{REF_PREFIX}{bokio_id}"})
 
 
 def sync(args: argparse.Namespace) -> None:
@@ -161,12 +167,12 @@ def sync(args: argparse.Namespace) -> None:
             phone=p.get("phone"),
         )
 
-        ref = p.get("ref") or ""
-        bokio_id: str | None = None
-
-        # 1. Känt bokio-ID i ref-fältet
-        if ref.startswith(REF_PREFIX):
-            bokio_id = ref[len(REF_PREFIX):]
+        # Prefer dedicated bokio_id field (partner_bokio module); fall back to ref
+        bokio_id: str | None = p.get("bokio_id") or None
+        if not bokio_id:
+            ref = p.get("ref") or ""
+            if ref.startswith(REF_PREFIX):
+                bokio_id = ref[len(REF_PREFIX):]
 
         # 2. Namnmatchning
         if not bokio_id:
@@ -188,7 +194,7 @@ def sync(args: argparse.Namespace) -> None:
                 print(f"  [OK]  Uppdaterad: {name} ({REF_PREFIX}{bokio_id})")
                 updated += 1
                 if odoo_conn and not ref.startswith(REF_PREFIX):
-                    write_ref_to_odoo(odoo_conn, p["id"], bokio_id, dry_run)
+                    write_bokio_id_to_odoo(odoo_conn, p["id"], bokio_id, dry_run)
             elif bokio_id and skip_update:
                 print(f"  [SKIP] Finns redan: {name}")
                 skipped += 1
@@ -197,7 +203,7 @@ def sync(args: argparse.Namespace) -> None:
                     result = client.create_customer(payload)
                     bokio_id = bokio_id_from_customer(result) or "?"
                     if odoo_conn:
-                        write_ref_to_odoo(odoo_conn, p["id"], bokio_id, dry_run)
+                        write_bokio_id_to_odoo(odoo_conn, p["id"], bokio_id, dry_run)
                 else:
                     bokio_id = "dry-run"
                 print(f"  [OK]  Skapad:    {name} ({REF_PREFIX}{bokio_id})")

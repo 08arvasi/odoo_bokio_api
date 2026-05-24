@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Bokio tab on the contact form -->
+  <record id="view_partner_form_bokio" model="ir.ui.view">
+    <field name="name">res.partner.form.bokio</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//notebook" position="inside">
+        <page string="Bokio" name="bokio">
+          <group>
+            <group string="Identification">
+              <field name="bokio_id" readonly="1"/>
+              <field name="bokio_customer_number" readonly="1"/>
+            </group>
+            <group string="Sync Status">
+              <field name="bokio_master"/>
+              <field name="bokio_synced_at" readonly="1"/>
+            </group>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+
+</odoo>

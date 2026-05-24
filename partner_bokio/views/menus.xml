@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Contacts > Bokio Sync Status -->
+  <menuitem
+    id="menu_partner_bokio_sync"
+    name="Bokio Sync Status"
+    parent="contacts.menu_contacts"
+    action="action_partner_bokio_sync"
+    sequence="50"/>
+
+</odoo>
