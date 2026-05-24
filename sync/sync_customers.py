@@ -57,7 +57,7 @@ def fetch_odoo_customers(db: str | None, limit: int | None) -> list[dict]:
     except ImportError:
         sys.exit("clio_odoo saknas — lägg till clio-tools i PYTHONPATH.")
 
-    env_db = db or os.environ.get("ODOO_DB", "aiab19_migrated")
+    env_db = db or os.environ.get("ODOO_DB", "aiab19")
     conn = connect(db=env_db)
     Partner = conn["res.partner"]
     domain = [("customer_rank", ">", 0), ("active", "=", True), ("type", "=", "contact")]
@@ -109,7 +109,7 @@ def sync(args: argparse.Namespace) -> None:
     # Importera connect igen för ref-skrivning
     try:
         from clio_odoo import connect
-        odoo_conn = connect(db=args.db or os.environ.get("ODOO_DB", "aiab19_migrated"))
+        odoo_conn = connect(db=args.db or os.environ.get("ODOO_DB", "aiab19"))
     except ImportError:
         odoo_conn = None
 
