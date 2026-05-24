@@ -26,8 +26,6 @@
     <field name="model">res.partner</field>
     <field name="arch" type="xml">
       <search string="Bokio Sync">
-        <field name="name"/>
-        <field name="bokio_id"/>
         <filter string="Not synced" name="not_synced"
                 domain="[('bokio_id', '=', False)]"/>
         <filter string="Synced" name="synced"
@@ -36,7 +34,7 @@
                 domain="[('bokio_master', '=', 'bokio')]"/>
         <filter string="Master: Odoo" name="master_odoo"
                 domain="[('bokio_master', '=', 'odoo')]"/>
-        <group expand="0" string="Group By">
+        <group string="Group By">
           <filter string="Master System" name="group_master"
                   context="{'group_by': 'bokio_master'}"/>
         </group>
