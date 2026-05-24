@@ -47,8 +47,8 @@ ODOO_FIELDS = [
 ]
 
 
-def _norm(name: str) -> str:
-    return name.strip().lower()
+def _norm(name: str | None) -> str:
+    return (name or "").strip().lower()
 
 
 def fetch_odoo_customers(db: str | None, limit: int | None) -> list[dict]:
@@ -71,7 +71,11 @@ def build_bokio_index(client: BokioClient) -> dict[str, dict]:
         customers = client.list_customers()
     except BokioAPIError as e:
         sys.exit(f"Kunde inte hämta Bokio-kunder: {e}")
-    return {_norm(c.get("companyname", "") or c.get("name", "")): c for c in customers}
+    return {
+        key: c
+        for c in customers
+        if (key := _norm(c.get("name") or c.get("companyname")))
+    }
 
 
 def bokio_id_from_customer(cust: dict) -> str | None:
