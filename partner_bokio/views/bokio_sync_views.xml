@@ -28,7 +28,6 @@
       <search string="Bokio Sync">
         <field name="name"/>
         <field name="bokio_id"/>
-        <separator/>
         <filter string="Not synced" name="not_synced"
                 domain="[('bokio_id', '=', False)]"/>
         <filter string="Synced" name="synced"
