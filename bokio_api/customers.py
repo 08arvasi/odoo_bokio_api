@@ -5,15 +5,15 @@ class CustomersMixin:
     """Bokio customer CRUD — mixed into BokioClient."""
 
     def list_customers(self) -> list[dict]:
-        """Fetch all customers (handles pagination)."""
-        page, page_size = 0, 100
+        """Fetch all customers (1-indexed pagination, 25 per page)."""
         customers: list[dict] = []
+        page = 1
         while True:
-            resp = self._get("customers", params={"page": page, "pageSize": page_size})
-            items = resp.get("items") or resp.get("data") or (resp if isinstance(resp, list) else [])
+            resp = self._get("customers", params={"page": page})
+            items = resp.get("items", [])
             customers.extend(items)
-            total_pages = resp.get("totalPages", 1) if isinstance(resp, dict) else 1
-            if not items or page + 1 >= total_pages:
+            total_pages = resp.get("totalPages", 1)
+            if page >= total_pages:
                 break
             page += 1
         return customers
