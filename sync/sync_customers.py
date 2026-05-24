@@ -60,8 +60,22 @@ def fetch_odoo_customers(db: str | None, limit: int | None) -> list[dict]:
     env_db = db or os.environ.get("ODOO_DB", "aiab19")
     conn = connect(db=env_db)
     Partner = conn["res.partner"]
-    domain = [("customer_rank", ">", 0), ("active", "=", True), ("type", "=", "contact")]
-    partners = Partner.search_read(domain, ODOO_FIELDS, limit=limit or 0)
+
+    # Försök med customer_rank (kräver account-modulen), annars alla aktiva kontakter
+    try:
+        domain = [("customer_rank", ">", 0), ("active", "=", True), ("type", "=", "contact")]
+        partners = Partner.search_read(domain, ODOO_FIELDS, limit=limit or 0)
+    except Exception as e:
+        if "customer_rank" in str(e):
+            print("  [INFO] customer_rank saknas — hämtar alla aktiva kontakter istället")
+            domain = [("active", "=", True), ("type", "=", "contact"), ("id", ">", 4)]
+            fields = [f for f in ODOO_FIELDS if f != "personnummer"]
+            try:
+                partners = Partner.search_read(domain, ODOO_FIELDS, limit=limit or 0)
+            except Exception:
+                partners = Partner.search_read(domain, fields, limit=limit or 0)
+        else:
+            raise
     return partners
 
 
