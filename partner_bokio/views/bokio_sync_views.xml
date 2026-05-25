@@ -45,14 +45,64 @@
     </field>
   </record>
 
+  <!-- Kanban view: columns = Master System (Bokio | Odoo), drag to reassign -->
+  <record id="view_partner_bokio_sync_kanban" model="ir.ui.view">
+    <field name="name">res.partner.bokio.sync.kanban</field>
+    <field name="model">res.partner</field>
+    <field name="arch" type="xml">
+      <kanban default_group_by="bokio_master" records_draggable="1">
+        <field name="bokio_master"/>
+        <field name="bokio_id"/>
+        <field name="bokio_synced_at"/>
+        <field name="is_company"/>
+        <field name="email"/>
+        <field name="phone"/>
+        <templates>
+          <t t-name="kanban-card">
+            <div class="oe_kanban_global_click">
+              <div class="o_kanban_record_top mb-1">
+                <div class="o_kanban_record_headings">
+                  <strong class="o_kanban_record_title fs-6">
+                    <t t-if="record.is_company.value">🏢 </t>
+                    <field name="name"/>
+                  </strong>
+                </div>
+              </div>
+              <div class="o_kanban_record_body text-muted small">
+                <t t-if="record.email.value">
+                  <div><i class="fa fa-envelope-o me-1"/><field name="email"/></div>
+                </t>
+                <t t-if="record.bokio_id.value">
+                  <div class="text-success mt-1">
+                    <i class="fa fa-check-circle me-1"/>
+                    <field name="bokio_id"/>
+                  </div>
+                  <t t-if="record.bokio_synced_at.value">
+                    <div class="text-muted" style="font-size:0.75rem">
+                      <field name="bokio_synced_at" widget="datetime"/>
+                    </div>
+                  </t>
+                </t>
+                <t t-else="">
+                  <div class="text-warning mt-1">
+                    <i class="fa fa-exclamation-circle me-1"/>Not synced
+                  </div>
+                </t>
+              </div>
+            </div>
+          </t>
+        </templates>
+      </kanban>
+    </field>
+  </record>
+
   <!-- Window action -->
   <record id="action_partner_bokio_sync" model="ir.actions.act_window">
     <field name="name">Bokio Sync Status</field>
     <field name="res_model">res.partner</field>
-    <field name="view_mode">list,form</field>
-    <field name="view_id" ref="view_partner_bokio_sync_list"/>
+    <field name="view_mode">kanban,list,form</field>
     <field name="search_view_id" ref="view_partner_bokio_sync_search"/>
-    <field name="context">{'search_default_not_synced': 1}</field>
+    <field name="context">{}</field>
     <field name="domain">[('type', '=', 'contact'), ('active', '=', True)]</field>
     <field name="help" type="html">
       <p class="o_view_nocontent_smiling_face">
@@ -60,9 +110,11 @@
       </p>
       <p>
         Contacts missing a Bokio ID have not yet been synchronised.
-        Run <code>sync_customers.py</code> to push them to Bokio.
+        Run <code>sync_customers.py</code> or select records and use
+        <strong>Actions → Sync to Bokio</strong>.
       </p>
     </field>
   </record>
 
 </odoo>
+
