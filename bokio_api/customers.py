@@ -44,10 +44,12 @@ class CustomersMixin:
     ) -> dict:
         """Build a Bokio customer payload from normalised Odoo fields."""
         payload: dict = {
-            "companyname": name,
+            "name": name,
             "type": "company" if is_company else "private",
             "language": language,
         }
+        if is_company:
+            payload["companyname"] = name
         if org_number:
             payload["orgNumber"] = org_number
         if vat and is_company:
