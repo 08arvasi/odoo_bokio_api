@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- "Sync to Bokio" appears in the Actions menu when contacts are selected in list view -->
+  <record id="action_sync_partner_to_bokio" model="ir.actions.server">
+    <field name="name">Sync to Bokio</field>
+    <field name="model_id" ref="base.model_res_partner"/>
+    <field name="binding_model_id" ref="base.model_res_partner"/>
+    <field name="binding_view_types">list</field>
+    <field name="state">code</field>
+    <field name="code">records.action_sync_to_bokio()</field>
+  </record>
+
+</odoo>

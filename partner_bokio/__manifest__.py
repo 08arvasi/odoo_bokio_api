@@ -8,6 +8,7 @@
     "depends": ["contacts"],
     "data": [
         "security/ir.model.access.csv",
+        "data/server_actions.xml",
         "views/res_partner_views.xml",
         "views/bokio_sync_views.xml",
         "views/menus.xml",
