@@ -60,7 +60,22 @@ class ResPartner(models.Model):
 
         client = BokioClient(token=token, company_id=company_id)
         created = updated = skipped = errors = 0
+        linked = 0
         error_lines: list[str] = []
+
+        # Build Bokio name index once (only needed for linking Bokio-mastered records)
+        _bokio_index: dict | None = None
+
+        def _get_bokio_index() -> dict:
+            nonlocal _bokio_index
+            if _bokio_index is None:
+                all_custs = client.list_customers()
+                _bokio_index = {
+                    (c.get("name") or c.get("companyname") or "").strip().lower(): c
+                    for c in all_custs
+                    if (c.get("name") or c.get("companyname") or "").strip()
+                }
+            return _bokio_index
 
         for partner in self:
             name = (partner.name or "").strip()
@@ -68,6 +83,30 @@ class ResPartner(models.Model):
                 skipped += 1
                 continue
 
+            # ── Bokio is master: never overwrite Bokio data. ──────────────────
+            # Only link the Bokio UUID back to Odoo if we don't have it yet.
+            if partner.bokio_master == "bokio":
+                if not partner.bokio_id:
+                    try:
+                        idx = _get_bokio_index()
+                        match = idx.get(name.lower())
+                        if match:
+                            bokio_id = match.get("id") or match.get("customerId") or ""
+                            if bokio_id:
+                                partner.write({"bokio_id": bokio_id})
+                                linked += 1
+                            else:
+                                skipped += 1
+                        else:
+                            skipped += 1
+                    except BokioAPIError as exc:
+                        error_lines.append(f"{name} (link): {exc}")
+                        errors += 1
+                else:
+                    skipped += 1
+                continue
+
+            # ── Odoo is master: push Odoo data to Bokio. ─────────────────────
             country = partner.country_id.name if partner.country_id else "SE"
             org_number = None
             if partner.is_company:
@@ -113,7 +152,7 @@ class ResPartner(models.Model):
                 errors += 1
 
         # Build result notification
-        summary = f"Created: {created}  Updated: {updated}  Skipped: {skipped}"
+        summary = f"Created: {created}  Updated: {updated}  Linked: {linked}  Skipped: {skipped}"
         if errors:
             summary += f"  Errors: {errors}"
         if error_lines:
