@@ -13,8 +13,13 @@
             <button name="action_sync_to_bokio" type="object"
                     string="Sync to Bokio"
                     class="btn btn-primary"
-                    invisible="bokio_master == 'none'"
-                    title="Push this contact to Bokio (Odoo master) or link Bokio UUID (Bokio master)"/>
+                    invisible="bokio_master != 'odoo'"
+                    title="Push Odoo data to Bokio"/>
+            <button name="action_sync_to_bokio" type="object"
+                    string="Sync to Odoo"
+                    class="btn btn-primary"
+                    invisible="bokio_master != 'bokio'"
+                    title="Link Bokio UUID to this Odoo contact"/>
             <span invisible="bokio_master != 'none'"
                   class="text-muted fst-italic">
               This contact is Odoo only — not synced to Bokio.
