@@ -22,6 +22,10 @@ class CustomersMixin:
         """Create a new customer. Returns the created customer object."""
         return self._post("customers", payload)
 
+    def get_customer(self, customer_id: str) -> dict:
+        """Fetch a single customer by Bokio UUID."""
+        return self._get(f"customers/{customer_id}")
+
     def update_customer(self, customer_id: str, payload: dict) -> dict:
         """Update an existing customer by Bokio ID."""
         return self._put(f"customers/{customer_id}", payload)

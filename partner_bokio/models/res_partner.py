@@ -94,27 +94,72 @@ class ResPartner(models.Model):
                 skipped += 1
                 continue
 
-            # ── Bokio is master: never overwrite Bokio data. ──────────────────
-            # Only link the Bokio UUID back to Odoo if we don't have it yet.
+            # ── Bokio is master: pull Bokio data → Odoo. ─────────────────────
+            # Step 1: ensure we have a bokio_id (link by name if missing).
             if partner.bokio_master == "bokio":
-                if not partner.bokio_id:
+                current_bokio_id = partner.bokio_id
+                if not current_bokio_id:
                     try:
                         idx = _get_bokio_index()
                         match = idx.get(name.lower())
                         if match:
-                            bokio_id = match.get("id") or match.get("customerId") or ""
-                            if bokio_id:
-                                partner.write({"bokio_id": bokio_id})
+                            current_bokio_id = (
+                                match.get("id") or match.get("customerId") or ""
+                            )
+                            if current_bokio_id:
+                                partner.write({"bokio_id": current_bokio_id})
                                 linked += 1
                             else:
                                 skipped += 1
+                                continue
                         else:
                             skipped += 1
+                            continue
                     except BokioAPIError as exc:
                         error_lines.append(f"{name} (link): {exc}")
                         errors += 1
-                else:
-                    skipped += 1
+                        continue
+
+                # Step 2: fetch from Bokio and write to Odoo.
+                try:
+                    bokio_data = client.get_customer(current_bokio_id)
+                    vals: dict = {}
+
+                    contacts = bokio_data.get("contactsDetails", [])
+                    default_contact = next(
+                        (c for c in contacts if c.get("isDefault")),
+                        contacts[0] if contacts else {},
+                    )
+                    email = (default_contact.get("email") or "").strip()
+                    phone = (default_contact.get("phone") or "").strip()
+                    if email:
+                        vals["email"] = email
+                    if phone:
+                        vals["phone"] = phone
+
+                    if bokio_data.get("line1"):
+                        vals["street"] = bokio_data["line1"]
+                    if bokio_data.get("line2"):
+                        vals["street2"] = bokio_data["line2"]
+                    if bokio_data.get("postalCode"):
+                        vals["zip"] = bokio_data["postalCode"]
+                    if bokio_data.get("city"):
+                        vals["city"] = bokio_data["city"]
+
+                    country_code = (bokio_data.get("country") or "").strip().upper()
+                    if country_code:
+                        country_rec = partner.env["res.country"].search(
+                            [("code", "=", country_code)], limit=1
+                        )
+                        if country_rec:
+                            vals["country_id"] = country_rec.id
+
+                    vals["bokio_synced_at"] = fields.Datetime.now()
+                    partner.write(vals)
+                    updated += 1
+                except BokioAPIError as exc:
+                    error_lines.append(f"{name} (fetch): {exc}")
+                    errors += 1
                 continue
 
             # ── Odoo is master: push Odoo data to Bokio. ─────────────────────
