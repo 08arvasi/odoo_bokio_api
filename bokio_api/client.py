@@ -57,3 +57,8 @@ class BokioClient(CustomersMixin):
         self._raise_for_status(resp)
         time.sleep(self._rate_limit_s)
         return resp.json()
+
+    def _delete(self, path: str) -> None:
+        resp = self._session.delete(self._url(path))
+        self._raise_for_status(resp)
+        time.sleep(self._rate_limit_s)

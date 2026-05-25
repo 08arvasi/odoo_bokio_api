@@ -34,12 +34,18 @@ class ResPartner(models.Model):
         help="Timestamp of the last successful sync with Bokio.",
     )
     bokio_master = fields.Selection(
-        selection=[("odoo", "Odoo"), ("bokio", "Bokio")],
+        selection=[
+            ("bokio", "Bokio"),
+            ("odoo", "Odoo"),
+            ("none", "Odoo only"),
+        ],
         string="Master System",
         default="bokio",
         required=True,
-        help="Authoritative data source for this contact. "
-             "Bokio → Odoo receives on sync. Odoo → Odoo pushes to Bokio.",
+        help="Authoritative data source for this contact.\n"
+             "Bokio → Odoo reads from Bokio; never overwritten by Odoo.\n"
+             "Odoo → Odoo pushes to Bokio (create or update).\n"
+             "Odoo only → local contact, never synced to Bokio.",
     )
 
     def action_sync_to_bokio(self):
@@ -80,6 +86,11 @@ class ResPartner(models.Model):
         for partner in self:
             name = (partner.name or "").strip()
             if not name:
+                skipped += 1
+                continue
+
+            # ── Odoo only: never touch Bokio at all. ─────────────────────────
+            if partner.bokio_master == "none":
                 skipped += 1
                 continue
 

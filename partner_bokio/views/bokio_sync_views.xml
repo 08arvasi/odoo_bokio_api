@@ -12,7 +12,8 @@
         <field name="email" optional="show"/>
         <field name="bokio_master" widget="badge"
                decoration-info="bokio_master == 'bokio'"
-               decoration-warning="bokio_master == 'odoo'"/>
+               decoration-success="bokio_master == 'odoo'"
+               decoration-muted="bokio_master == 'none'"/>
         <field name="bokio_id" optional="show"/>
         <field name="bokio_customer_number" optional="show"/>
         <field name="bokio_synced_at" optional="show"/>
@@ -37,6 +38,8 @@
                 domain="[('bokio_master', '=', 'bokio')]"/>
         <filter string="Master: Odoo" name="master_odoo"
                 domain="[('bokio_master', '=', 'odoo')]"/>
+        <filter string="Odoo only" name="master_none"
+                domain="[('bokio_master', '=', 'none')]"/>
         <group name="group_by">
           <filter string="Master System" name="group_master"
                   context="{'group_by': 'bokio_master'}"/>
@@ -101,6 +104,7 @@
     <field name="name">Bokio Sync Status</field>
     <field name="res_model">res.partner</field>
     <field name="view_mode">kanban,list,form</field>
+    <field name="view_id" eval="False"/>
     <field name="search_view_id" ref="view_partner_bokio_sync_search"/>
     <field name="context">{}</field>
     <field name="domain">[('type', '=', 'contact'), ('active', '=', True)]</field>
