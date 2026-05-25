@@ -9,6 +9,17 @@
     <field name="arch" type="xml">
       <xpath expr="//notebook" position="inside">
         <page string="Bokio" name="bokio">
+          <div class="mb-3">
+            <button name="action_sync_to_bokio" type="object"
+                    string="Sync to Bokio"
+                    class="btn btn-primary"
+                    invisible="bokio_master == 'none'"
+                    title="Push this contact to Bokio (Odoo master) or link Bokio UUID (Bokio master)"/>
+            <span invisible="bokio_master != 'none'"
+                  class="text-muted fst-italic">
+              This contact is Odoo only — not synced to Bokio.
+            </span>
+          </div>
           <group>
             <group string="Identification">
               <field name="bokio_id" readonly="1"/>
