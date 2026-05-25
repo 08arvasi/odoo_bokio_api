@@ -137,16 +137,18 @@ class ResPartner(models.Model):
                     if phone:
                         vals["phone"] = phone
 
-                    if bokio_data.get("line1"):
-                        vals["street"] = bokio_data["line1"]
-                    if bokio_data.get("line2"):
-                        vals["street2"] = bokio_data["line2"]
-                    if bokio_data.get("postalCode"):
-                        vals["zip"] = bokio_data["postalCode"]
-                    if bokio_data.get("city"):
-                        vals["city"] = bokio_data["city"]
+                    # Address is nested under "address" key in Bokio response
+                    address = bokio_data.get("address") or {}
+                    if address.get("line1"):
+                        vals["street"] = address["line1"]
+                    if address.get("line2"):
+                        vals["street2"] = address["line2"]
+                    if address.get("postalCode"):
+                        vals["zip"] = address["postalCode"]
+                    if address.get("city"):
+                        vals["city"] = address["city"]
 
-                    country_code = (bokio_data.get("country") or "").strip().upper()
+                    country_code = (address.get("country") or "").strip().upper()
                     if country_code:
                         country_rec = partner.env["res.country"].search(
                             [("code", "=", country_code)], limit=1
