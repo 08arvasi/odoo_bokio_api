@@ -144,6 +144,12 @@ def sync(args: argparse.Namespace) -> None:
             skipped += 1
             continue
 
+        # Respektera bokio_master: hoppa poster där Bokio eller ingen är master
+        bokio_master = p.get("bokio_master") or "odoo"
+        if bokio_master in ("bokio", "none"):
+            skipped += 1
+            continue
+
         country_raw = p.get("country_id")
         country = country_raw[1] if isinstance(country_raw, (list, tuple)) and len(country_raw) > 1 else "SE"
 
@@ -168,9 +174,9 @@ def sync(args: argparse.Namespace) -> None:
         )
 
         # Prefer dedicated bokio_id field (partner_bokio module); fall back to ref
+        ref = p.get("ref") or ""
         bokio_id: str | None = p.get("bokio_id") or None
         if not bokio_id:
-            ref = p.get("ref") or ""
             if ref.startswith(REF_PREFIX):
                 bokio_id = ref[len(REF_PREFIX):]
 
