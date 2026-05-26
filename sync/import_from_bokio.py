@@ -58,7 +58,6 @@ def build_odoo_vals(bokio_data: dict, env) -> dict:
         "is_company": is_company,
         "bokio_id": bokio_data.get("id") or bokio_data.get("customerId") or "",
         "bokio_master": "bokio",
-        "customer_rank": 1,
     }
 
     contacts = bokio_data.get("contactsDetails", [])
