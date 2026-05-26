@@ -127,13 +127,17 @@ def run(args: argparse.Namespace) -> None:
     conn = connect(db=odoo_db)
     Partner = conn["res.partner"]
 
-    # Bygg index över befintliga bokio_id i Odoo
-    existing_ids: set[str] = set()
+    # Bygg index över befintliga bokio_id i Odoo: {bokio_id: {id, bokio_master}}
+    existing_map: dict[str, dict] = {}
     try:
         existing = Partner.search_read(
-            [("bokio_id", "!=", False)], ["bokio_id"], limit=0
+            [("bokio_id", "!=", False)], ["bokio_id", "bokio_master"], limit=0
         )
-        existing_ids = {r["bokio_id"] for r in existing if r.get("bokio_id")}
+        existing_map = {
+            r["bokio_id"]: r
+            for r in existing
+            if r.get("bokio_id")
+        }
     except Exception:
         pass  # fältet kanske saknas om modulen inte är installerad
 
@@ -150,7 +154,7 @@ def run(args: argparse.Namespace) -> None:
             skipped += 1
             continue
 
-        if skip_existing and bokio_uuid in existing_ids:
+        if skip_existing and bokio_uuid in existing_map:
             print(f"  [SKIP] {cust_name} — redan importerad")
             skipped += 1
             continue
@@ -181,18 +185,20 @@ def run(args: argparse.Namespace) -> None:
             continue
 
         try:
-            if bokio_uuid in existing_ids:
-                # Uppdatera befintlig
-                recs = Partner.search_read(
-                    [("bokio_id", "=", bokio_uuid)], ["id"], limit=1
-                )
-                if recs:
-                    Partner.write([recs[0]["id"]], vals)
-                    print(f"  [OK]  Uppdaterad: {vals['name']}")
-                    updated += 1
+            if bokio_uuid in existing_map:
+                existing_rec = existing_map[bokio_uuid]
+                master = existing_rec.get("bokio_master") or "bokio"
+                if master != "bokio":
+                    # Odoo är master — aldrig skriva över med Bokio-data
+                    print(f"  [SKIP] {vals['name']} — master={master}, Odoo äger posten")
+                    skipped += 1
+                    continue
+                Partner.write([existing_rec["id"]], vals)
+                print(f"  [OK]  Uppdaterad: {vals['name']}")
+                updated += 1
             else:
                 Partner.create(vals)
-                existing_ids.add(bokio_uuid)
+                existing_map[bokio_uuid] = {"id": None, "bokio_master": "bokio"}
                 print(f"  [OK]  Skapad:    {vals['name']}")
                 created += 1
         except Exception as e:
