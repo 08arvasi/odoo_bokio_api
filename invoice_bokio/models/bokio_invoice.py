@@ -241,6 +241,27 @@ class BokioInvoice(models.Model):
             },
         }
 
+    @api.model
+    def action_fetch_missing_pdfs(self, batch_size=10):
+        """Cron: hämtar PDFs för fakturor som saknar dem, max batch_size per körning."""
+        records = self.search(
+            [('has_pdf', '=', False), ('bokio_id', '!=', False), ('bokio_id', '!=', 'z')],
+            limit=batch_size,
+        )
+        if not records:
+            return
+        try:
+            client = self._get_bokio_client()
+        except Exception:
+            return
+        done = failed = 0
+        for record in records:
+            result = record._fetch_and_store_pdf(client)
+            if result is None:
+                done += 1
+            elif result != 'skip':
+                failed += 1
+
     # ── Sync ───────────────────────────────────────────────────────────────────
 
     @api.model
@@ -257,7 +278,7 @@ class BokioInvoice(models.Model):
             raise
 
         get_param = self.env['ir.config_parameter'].sudo().get_param
-        fetched = created = updated = confirmations = pdfs = 0
+        fetched = created = updated = confirmations = 0
         error_lines: list[str] = []
 
         try:
@@ -337,14 +358,6 @@ class BokioInvoice(models.Model):
                     record = self.create(vals)
                     created += 1
 
-                # Fetch PDF for new records
-                if is_new:
-                    pdf_result = record._fetch_and_store_pdf(client)
-                    if pdf_result is None:
-                        pdfs += 1
-                    elif pdf_result != 'skip':
-                        error_lines.append(f'PDF {bokio_id}: {pdf_result}')
-
                 # Send confirmation for live paid transitions
                 if (
                     mail_enabled
@@ -391,7 +404,7 @@ class BokioInvoice(models.Model):
                 'title': 'Bokio Sync',
                 'message': (
                     f'Fetched {fetched} | Created {created} | '
-                    f'Updated {updated} | PDFs {pdfs} | Confirmations {confirmations}'
+                    f'Updated {updated} | Confirmations {confirmations}'
                 ),
                 'type': 'success' if status == 'success' else 'warning',
                 'sticky': bool(error_lines),
