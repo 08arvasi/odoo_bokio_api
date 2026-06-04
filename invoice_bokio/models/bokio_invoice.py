@@ -25,9 +25,9 @@ class BokioInvoice(models.Model):
     bokio_id = fields.Char(string='Bokio ID', required=True, copy=False, index=True)
     bokio_invoice_number = fields.Char(string='Invoice No.', copy=False)
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='set null', index=True)
-    customer_email = fields.Char(
+    partner_email = fields.Char(
         related='partner_id.email',
-        string='Customer Email',
+        string='E-post',
         readonly=True,
         store=False,
     )
@@ -350,7 +350,7 @@ class BokioInvoice(models.Model):
                     mail_enabled
                     and record.bokio_status == 'paid'
                     and record.confirmation_status == 'pending'
-                    and record.customer_email
+                    and record.partner_email
                 ):
                     try:
                         template = self.env.ref(

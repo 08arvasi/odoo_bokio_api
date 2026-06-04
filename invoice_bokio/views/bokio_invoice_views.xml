@@ -9,7 +9,7 @@
       <list string="Bokio Invoices" default_order="issue_date desc">
         <field name="bokio_invoice_number"/>
         <field name="partner_id"/>
-        <field name="customer_email" optional="show"/>
+        <field name="partner_email" optional="show"/>
         <field name="issue_date"/>
         <field name="due_date" optional="show"/>
         <field name="amount_total"/>
@@ -58,7 +58,7 @@
             </group>
             <group string="Kund">
               <field name="partner_id"/>
-              <field name="customer_email"/>
+              <field name="partner_email"/>
             </group>
             <group string="Belopp">
               <field name="amount_total"/>
@@ -96,7 +96,6 @@
       <search string="Bokio Invoices">
         <field name="bokio_invoice_number"/>
         <field name="partner_id"/>
-        <field name="customer_email"/>
         <separator/>
         <filter string="Paid" name="paid" domain="[('bokio_status', '=', 'paid')]"/>
         <filter string="Published" name="published" domain="[('bokio_status', '=', 'published')]"/>
