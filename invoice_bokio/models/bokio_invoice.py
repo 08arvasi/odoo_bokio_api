@@ -94,6 +94,90 @@ class BokioInvoice(models.Model):
             )
         return BokioClient(token=token, company_id=company_id)
 
+    @api.model
+    def _get_filter_keyword(self) -> str:
+        """Return lowercase filter keyword, or '' to sync all invoices.
+
+        System parameter: bokio.sync.filter_keyword
+        Example value:    jessica
+        Leave empty to import all invoices regardless of content.
+        """
+        kw = self.env['ir.config_parameter'].sudo().get_param(
+            'bokio.sync.filter_keyword', ''
+        )
+        return (kw or '').strip().lower()
+
+    @staticmethod
+    def _invoice_matches_keyword(inv: dict, keyword: str) -> bool:
+        """Return True if any lineItem description contains the keyword."""
+        return any(
+            keyword in (item.get('description') or '').lower()
+            for item in inv.get('lineItems', [])
+        )
+
+    @api.model
+    def _ensure_partner(self, client, customer_ref_id: str):
+        """Return res.partner for the Bokio customer ID, creating on-demand if missing."""
+        if not customer_ref_id:
+            return self.env['res.partner']
+
+        partner = self.env['res.partner'].search(
+            [('bokio_id', '=', customer_ref_id)], limit=1
+        )
+        if partner:
+            return partner
+
+        # Not in Odoo yet — pull from Bokio and create with bokio_master='bokio'
+        from bokio_api import BokioAPIError
+        try:
+            bokio_data = client.get_customer(customer_ref_id)
+        except BokioAPIError:
+            return self.env['res.partner']
+
+        name = (bokio_data.get('companyname') or bokio_data.get('name') or '').strip()
+        if not name:
+            return self.env['res.partner']
+
+        vals = {
+            'name': name,
+            'is_company': bokio_data.get('type', '').lower() == 'company',
+            'bokio_id': customer_ref_id,
+            'bokio_master': 'bokio',
+            'bokio_synced_at': fields.Datetime.now(),
+        }
+
+        contacts = bokio_data.get('contactsDetails', [])
+        default_contact = next(
+            (c for c in contacts if c.get('isDefault')),
+            contacts[0] if contacts else {},
+        )
+        email = (default_contact.get('email') or '').strip()
+        phone = (default_contact.get('phone') or '').strip()
+        if email:
+            vals['email'] = email
+        if phone:
+            vals['phone'] = phone
+
+        address = bokio_data.get('address') or {}
+        if address.get('line1'):
+            vals['street'] = address['line1']
+        if address.get('line2'):
+            vals['street2'] = address['line2']
+        if address.get('postalCode'):
+            vals['zip'] = address['postalCode']
+        if address.get('city'):
+            vals['city'] = address['city']
+
+        country_code = (address.get('country') or '').strip().upper()
+        if country_code:
+            country_rec = self.env['res.country'].search(
+                [('code', '=', country_code)], limit=1
+            )
+            if country_rec:
+                vals['country_id'] = country_rec.id
+
+        return self.env['res.partner'].create(vals)
+
     # ── PDF ────────────────────────────────────────────────────────────────────
 
     def _fetch_and_store_pdf(self, client) -> str | None:
@@ -180,6 +264,28 @@ class BokioInvoice(models.Model):
         from_date = self._get_sync_from_date()
         invoices = [inv for inv in invoices if (inv.get('invoiceDate') or '') >= from_date]
 
+        # ── Keyword filter ────────────────────────────────────────────────────
+        # bokio.sync.filter_keyword: if set, only process invoices whose
+        # lineItems contain the keyword. Credit notes that credit a matched
+        # invoice are always included regardless of their own content.
+        keyword = self._get_filter_keyword()
+        if keyword:
+            # Pass 1: collect matched IDs and their associated credit note IDs
+            matched_ids: set[str] = set()
+            credit_note_ids: set[str] = set()
+            for inv in invoices:
+                if self._invoice_matches_keyword(inv, keyword):
+                    matched_ids.add(inv['id'])
+                    for ref in inv.get('creditNoteRefs', []):
+                        cid = ref.get('id') if isinstance(ref, dict) else str(ref)
+                        if cid:
+                            credit_note_ids.add(cid)
+            # Pass 2: keep matched invoices + their credit notes
+            invoices = [
+                inv for inv in invoices
+                if inv['id'] in matched_ids or inv['id'] in credit_note_ids
+            ]
+
         fetched = len(invoices)
         now = fields.Datetime.now()
         mail_enabled = get_param('bokio.mail.confirmation.enabled') == '1'
@@ -191,11 +297,8 @@ class BokioInvoice(models.Model):
             try:
                 existing = self.search([('bokio_id', '=', bokio_id)], limit=1)
                 customer_ref_id = (inv.get('customerRef') or {}).get('id', '')
-                partner = (
-                    self.env['res.partner'].search(
-                        [('bokio_id', '=', customer_ref_id)], limit=1
-                    ) if customer_ref_id else self.env['res.partner']
-                )
+                # On-demand partner sync: create partner from Bokio if not in Odoo
+                partner = self._ensure_partner(client, customer_ref_id)
                 new_status = inv.get('status', '')
                 old_status = existing.bokio_status if existing else None
 
