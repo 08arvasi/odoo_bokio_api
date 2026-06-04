@@ -25,7 +25,12 @@ class BokioInvoice(models.Model):
     bokio_id = fields.Char(string='Bokio ID', required=True, copy=False, index=True)
     bokio_invoice_number = fields.Char(string='Invoice No.', copy=False)
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='set null', index=True)
-    customer_email = fields.Char(string='Customer Email')
+    customer_email = fields.Char(
+        related='partner_id.email',
+        string='Customer Email',
+        readonly=True,
+        store=False,
+    )
     amount_total = fields.Float(string='Total', digits=(12, 2))
     amount_tax = fields.Float(string='Tax', digits=(12, 2))
     amount_paid = fields.Float(string='Paid Amount', digits=(12, 2))
@@ -306,7 +311,6 @@ class BokioInvoice(models.Model):
                     'bokio_id': bokio_id,
                     'bokio_invoice_number': inv.get('invoiceNumber', ''),
                     'partner_id': partner.id if partner else False,
-                    'customer_email': (inv.get('contactDetailRef') or {}).get('email', ''),
                     'amount_total': inv.get('totalAmount', 0.0),
                     'amount_tax': inv.get('totalTax', 0.0),
                     'amount_paid': inv.get('paidAmount', 0.0),
