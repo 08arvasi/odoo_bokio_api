@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Top-level Bokio menu (shared with partner_bokio) -->
+  <menuitem
+    id="menu_bokio_root"
+    name="Bokio"
+    sequence="90"/>
+
+  <menuitem
+    id="menu_bokio_invoices"
+    name="Invoices"
+    parent="menu_bokio_root"
+    action="action_bokio_invoice"
+    sequence="10"/>
+
+  <menuitem
+    id="menu_bokio_sync_log"
+    name="Sync Log"
+    parent="menu_bokio_root"
+    action="action_bokio_sync_log"
+    sequence="20"/>
+
+</odoo>

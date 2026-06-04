@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="mail_template_payment_confirmation" model="mail.template">
+    <field name="name">Bokio: Payment Confirmation</field>
+    <field name="model_id" search="[('model', '=', 'bokio.invoice')]"/>
+    <field name="subject">Betalningsbekräftelse — faktura {{ object.bokio_invoice_number }}</field>
+    <field name="email_from">ekonomi@arvas.international</field>
+    <field name="email_to">{{ object.customer_email }}</field>
+    <field name="body_html" type="html">
+      <p>Hej <t t-out="object.partner_id.name or object.customer_email"/>,</p>
+      <p>
+        Tack! Vi har tagit emot din betalning för faktura
+        <strong><t t-out="object.bokio_invoice_number"/></strong>
+        på <t t-out="object.amount_total"/> <t t-out="object.currency"/>.
+      </p>
+      <p>
+        Med vänliga hälsningar,<br/>
+        Jessica Leijer<br/>
+        Leg. psykolog
+      </p>
+    </field>
+    <field name="auto_delete">True</field>
+  </record>
+</odoo>

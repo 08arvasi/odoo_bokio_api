@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- List view -->
+  <record id="view_bokio_invoice_list" model="ir.ui.view">
+    <field name="name">bokio.invoice.list</field>
+    <field name="model">bokio.invoice</field>
+    <field name="arch" type="xml">
+      <list string="Bokio Invoices" default_order="issue_date desc">
+        <field name="bokio_invoice_number"/>
+        <field name="partner_id"/>
+        <field name="customer_email" optional="show"/>
+        <field name="issue_date"/>
+        <field name="due_date" optional="show"/>
+        <field name="amount_total"/>
+        <field name="currency" optional="hide"/>
+        <field name="bokio_status" widget="badge"
+               decoration-success="bokio_status == 'paid'"
+               decoration-warning="bokio_status == 'overdue'"
+               decoration-danger="bokio_status == 'credited'"
+               decoration-info="bokio_status == 'published'"
+               decoration-muted="bokio_status == 'draft'"/>
+        <field name="has_pdf" widget="boolean_toggle" optional="show"/>
+        <field name="confirmation_status" widget="badge"
+               decoration-success="confirmation_status == 'sent'"
+               decoration-muted="confirmation_status == 'n_a'"
+               decoration-warning="confirmation_status == 'pending'"
+               optional="show"/>
+        <field name="last_synced" optional="hide"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Form view -->
+  <record id="view_bokio_invoice_form" model="ir.ui.view">
+    <field name="name">bokio.invoice.form</field>
+    <field name="model">bokio.invoice</field>
+    <field name="arch" type="xml">
+      <form string="Bokio Invoice">
+        <header>
+          <button name="action_fetch_pdf" type="object" string="Hämta PDF"
+                  class="btn-secondary"
+                  invisible="has_pdf == True"/>
+          <button name="action_fetch_pdf" type="object" string="Ladda om PDF"
+                  class="btn-secondary"
+                  invisible="has_pdf == False"/>
+          <field name="bokio_status" widget="statusbar"
+                 statusbar_visible="published,paid,overdue"/>
+        </header>
+        <sheet>
+          <group>
+            <group string="Faktura">
+              <field name="bokio_invoice_number"/>
+              <field name="bokio_id"/>
+              <field name="issue_date"/>
+              <field name="due_date"/>
+              <field name="published_at"/>
+            </group>
+            <group string="Kund">
+              <field name="partner_id"/>
+              <field name="customer_email"/>
+            </group>
+            <group string="Belopp">
+              <field name="amount_total"/>
+              <field name="amount_tax"/>
+              <field name="amount_paid"/>
+              <field name="currency"/>
+            </group>
+            <group string="Sync &amp; PDF">
+              <field name="has_pdf"/>
+              <field name="last_synced"/>
+              <field name="paid_detected_at"/>
+              <field name="confirmation_status" widget="badge"
+                     decoration-success="confirmation_status == 'sent'"
+                     decoration-muted="confirmation_status == 'n_a'"
+                     decoration-warning="confirmation_status == 'pending'"/>
+              <field name="confirmation_sent_at"/>
+            </group>
+          </group>
+          <notebook>
+            <page string="Raw JSON">
+              <field name="raw_json" widget="ace"/>
+            </page>
+          </notebook>
+        </sheet>
+        <chatter/>
+      </form>
+    </field>
+  </record>
+
+  <!-- Search view -->
+  <record id="view_bokio_invoice_search" model="ir.ui.view">
+    <field name="name">bokio.invoice.search</field>
+    <field name="model">bokio.invoice</field>
+    <field name="arch" type="xml">
+      <search string="Bokio Invoices">
+        <field name="bokio_invoice_number"/>
+        <field name="partner_id"/>
+        <field name="customer_email"/>
+        <separator/>
+        <filter string="Paid" name="paid" domain="[('bokio_status', '=', 'paid')]"/>
+        <filter string="Published" name="published" domain="[('bokio_status', '=', 'published')]"/>
+        <filter string="Overdue" name="overdue" domain="[('bokio_status', '=', 'overdue')]"/>
+        <filter string="PDF saknas" name="no_pdf"
+                domain="[('bokio_status', 'in', ['paid','published','overdue']), ('has_pdf', '=', False)]"/>
+        <filter string="Confirmation pending" name="pending_confirmation"
+                domain="[('confirmation_status', '=', 'pending')]"/>
+        <group name="group_by">
+          <filter string="Status" name="group_status" context="{'group_by': 'bokio_status'}"/>
+          <filter string="Kund" name="group_partner" context="{'group_by': 'partner_id'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <!-- Window action -->
+  <record id="action_bokio_invoice" model="ir.actions.act_window">
+    <field name="name">Bokio Invoices</field>
+    <field name="res_model">bokio.invoice</field>
+    <field name="view_mode">list,form</field>
+    <field name="search_view_id" ref="view_bokio_invoice_search"/>
+  </record>
+
+  <!-- Manual sync server action (list Actions menu) -->
+  <record id="action_bokio_invoice_sync_manual" model="ir.actions.server">
+    <field name="name">Sync Now</field>
+    <field name="model_id" search="[('model', '=', 'bokio.invoice')]"/>
+    <field name="state">code</field>
+    <field name="code">model.action_sync_invoices()</field>
+    <field name="binding_model_id" search="[('model', '=', 'bokio.invoice')]"/>
+    <field name="binding_type">action</field>
+  </record>
+
+  <!-- Fetch PDFs server action (list Actions menu, multi-select) -->
+  <record id="action_bokio_fetch_pdfs" model="ir.actions.server">
+    <field name="name">Hämta PDF</field>
+    <field name="model_id" search="[('model', '=', 'bokio.invoice')]"/>
+    <field name="state">code</field>
+    <field name="code">action = records.action_fetch_pdf()</field>
+    <field name="binding_model_id" search="[('model', '=', 'bokio.invoice')]"/>
+    <field name="binding_type">action</field>
+  </record>
+
+</odoo>

@@ -4,16 +4,18 @@ import time
 import requests
 
 from .customers import CustomersMixin
+from .invoices import InvoicesMixin
 from .exceptions import BokioAPIError
 
 
-class BokioClient(CustomersMixin):
+class BokioClient(CustomersMixin, InvoicesMixin):
     """
     Authenticated Bokio REST API client.
 
     Usage:
         client = BokioClient(token="...", company_id="...")
         customers = client.list_customers()
+        invoices = client.list_invoices()
     """
 
     BASE = "https://api.bokio.se/v1"

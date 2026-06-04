@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bokio_invoice_user,bokio.invoice user,invoice_bokio.model_bokio_invoice,base.group_user,1,1,1,0
+access_bokio_invoice_admin,bokio.invoice admin,invoice_bokio.model_bokio_invoice,base.group_system,1,1,1,1
+access_bokio_sync_log_user,bokio.sync.log user,invoice_bokio.model_bokio_sync_log,base.group_user,1,0,0,0
+access_bokio_sync_log_admin,bokio.sync.log admin,invoice_bokio.model_bokio_sync_log,base.group_system,1,1,1,1
