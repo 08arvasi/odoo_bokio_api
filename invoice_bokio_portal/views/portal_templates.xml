@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Portal home: add Fakturor entry -->
+    <template id="portal_my_home_bokio" inherit_id="portal.portal_my_home" name="Portal: Bokio Fakturor">
+        <xpath expr="//div[@id='portal_common_category']" position="before">
+            <div class="o_portal_category row g-2 mt-3">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">Fakturor</t>
+                    <t t-set="text">Se dina fakturor från oss</t>
+                    <t t-set="url">/my/bokio-invoices</t>
+                    <t t-set="placeholder_count">bokio_invoice_count</t>
+                    <t t-set="show_count" t-value="True"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Portal invoice list -->
+    <template id="portal_my_bokio_invoices" name="Mina fakturor">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Fakturor</t>
+            </t>
+            <t t-if="not invoices">
+                <div class="alert alert-info mt-3">Inga fakturor hittades.</div>
+            </t>
+            <t t-if="invoices">
+                <div class="card mt-3">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fakturanr</th>
+                                    <th>Fakturadatum</th>
+                                    <th>Förfaller</th>
+                                    <th class="text-end">Belopp</th>
+                                    <th class="text-end">Betalt</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="invoices" t-as="inv">
+                                    <tr>
+                                        <td>
+                                            <a t-attf-href="/my/bokio-invoices/#{inv.id}">
+                                                <t t-out="inv.bokio_invoice_number"/>
+                                            </a>
+                                        </td>
+                                        <td><t t-out="inv.issue_date"/></td>
+                                        <td><t t-out="inv.due_date"/></td>
+                                        <td class="text-end">
+                                            <t t-out="'%.2f' % inv.amount_total"/>
+                                            <small class="text-muted ms-1"><t t-out="inv.currency"/></small>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-out="'%.2f' % inv.amount_paid"/>
+                                            <small class="text-muted ms-1"><t t-out="inv.currency"/></small>
+                                        </td>
+                                        <td>
+                                            <span t-attf-class="badge bg-#{status_badge.get(inv.bokio_status, 'secondary')}">
+                                                <t t-out="status_labels.get(inv.bokio_status, inv.bokio_status)"/>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <t t-if="inv.has_pdf">
+                                                <a t-attf-href="/my/bokio-invoices/#{inv.id}/pdf"
+                                                   class="btn btn-sm btn-outline-secondary"
+                                                   title="Ladda ner PDF">
+                                                    <i class="fa fa-file-pdf-o"/>
+                                                </a>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div t-if="pager" class="o_portal_pager text-center mt-3">
+                    <t t-call="portal.pager">
+                        <t t-set="pager" t-value="pager"/>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Portal invoice detail -->
+    <template id="portal_bokio_invoice_detail" name="Fakturadetalj">
+        <t t-call="portal.portal_layout">
+            <t t-set="o_portal_fullwidth_alert" groups="base.group_user">
+                <t t-call="portal.portal_back_in_edit_mode">
+                    <t t-set="backend_url" t-value="'/web#model=bokio.invoice&amp;id=%s&amp;view_type=form' % invoice.id"/>
+                </t>
+            </t>
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        Faktura <strong><t t-out="invoice.bokio_invoice_number"/></strong>
+                    </h5>
+                    <span t-attf-class="badge bg-#{status_badge.get(invoice.bokio_status, 'secondary')}">
+                        <t t-out="status_labels.get(invoice.bokio_status, invoice.bokio_status)"/>
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5 text-muted">Kund</dt>
+                                <dd class="col-sm-7"><t t-out="invoice.partner_id.name or '&#8212;'"/></dd>
+                                <dt class="col-sm-5 text-muted">Fakturadatum</dt>
+                                <dd class="col-sm-7"><t t-out="invoice.issue_date or '&#8212;'"/></dd>
+                                <dt class="col-sm-5 text-muted">Förfallodatum</dt>
+                                <dd class="col-sm-7"><t t-out="invoice.due_date or '&#8212;'"/></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5 text-muted">Totalbelopp</dt>
+                                <dd class="col-sm-7">
+                                    <strong><t t-out="'%.2f' % invoice.amount_total"/></strong>
+                                    <t t-out="invoice.currency"/>
+                                </dd>
+                                <dt class="col-sm-5 text-muted">varav moms</dt>
+                                <dd class="col-sm-7">
+                                    <t t-out="'%.2f' % invoice.amount_tax"/>
+                                    <t t-out="invoice.currency"/>
+                                </dd>
+                                <dt class="col-sm-5 text-muted">Betalt</dt>
+                                <dd class="col-sm-7">
+                                    <t t-out="'%.2f' % invoice.amount_paid"/>
+                                    <t t-out="invoice.currency"/>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="/my/bokio-invoices" class="btn btn-outline-secondary btn-sm">
+                            &#8592; Tillbaka till fakturalistan
+                        </a>
+                        <t t-if="invoice.has_pdf">
+                            <a t-attf-href="/my/bokio-invoices/#{invoice.id}/pdf"
+                               class="btn btn-primary btn-sm ms-2">
+                                <i class="fa fa-download me-1"/> Ladda ner PDF
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>
