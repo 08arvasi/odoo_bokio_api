@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+  <!-- bokio.token — Bokio Private Integration Token -->
+  <record id="param_bokio_token" model="ir.config_parameter">
+    <field name="key">bokio.token</field>
+    <field name="value"></field>
+  </record>
+
+  <!-- bokio.company_id — Bokio Company UUID -->
+  <record id="param_bokio_company_id" model="ir.config_parameter">
+    <field name="key">bokio.company_id</field>
+    <field name="value"></field>
+  </record>
+
+  <!-- bokio.sync.from_date — Startdatum för synk (YYYY-MM-DD).
+       Default: innevarande räkenskapsår (1 sep).
+       Ändra till t.ex. 2024-09-01 för föregående VÅ. -->
+  <record id="param_bokio_sync_from_date" model="ir.config_parameter">
+    <field name="key">bokio.sync.from_date</field>
+    <field name="value">2025-09-01</field>
+  </record>
+
+  <!-- bokio.sync.filter_keyword — Filtrera på nyckelord i radtext (t.ex. jessica).
+       Lämna tomt för att synka alla fakturor. -->
+  <record id="param_bokio_sync_filter_keyword" model="ir.config_parameter">
+    <field name="key">bokio.sync.filter_keyword</field>
+    <field name="value"></field>
+  </record>
+
+  <!-- bokio.mail.confirmation.enabled — Sätt till 1 för att skicka
+       betalningsbekräftelse per mail när en faktura markeras som betald. -->
+  <record id="param_bokio_mail_confirmation_enabled" model="ir.config_parameter">
+    <field name="key">bokio.mail.confirmation.enabled</field>
+    <field name="value">0</field>
+  </record>
+
+</odoo>

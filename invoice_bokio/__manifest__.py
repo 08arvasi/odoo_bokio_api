@@ -23,6 +23,7 @@ Konfiguration (Settings > Technical > System Parameters):
         "security/ir.model.access.csv",
         "data/mail_template.xml",
         "data/cron.xml",
+        "data/system_parameters.xml",
         "views/bokio_invoice_views.xml",
         "views/bokio_sync_log_views.xml",
         "views/menus.xml",
