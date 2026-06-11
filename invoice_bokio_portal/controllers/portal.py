@@ -1,3 +1,5 @@
+import datetime
+
 from odoo import http
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal, pager as portal_pager
@@ -21,12 +23,48 @@ STATUS_BADGE = {
 }
 
 
+def _invoice_subtext(env):
+    """Compute dynamic subtext for portal home card."""
+    Invoice = env['bokio.invoice']
+    today = datetime.date.today()
+
+    overdue = Invoice.search([('bokio_status', '=', 'overdue')])
+    unpaid = Invoice.search(
+        [('bokio_status', '=', 'published')], order='due_date asc'
+    )
+
+    if not overdue and not unpaid:
+        return 'Alla fakturor betalda'
+
+    if overdue:
+        n = len(overdue)
+        return ('1 förfallen faktura' if n == 1
+                else f'{n} förfallna fakturor')
+
+    nearest = unpaid[0]
+    n = len(unpaid)
+    word = 'faktura' if n == 1 else 'fakturor'
+
+    if not nearest.due_date:
+        return f'{n} obetald {word}'
+
+    delta = (nearest.due_date - today).days
+    if delta < 0:
+        return f'{n} förfallen {word}'
+    if delta == 0:
+        return f'{n} {word} förfaller idag'
+    if delta == 1:
+        return f'{n} {word} — förfaller imorgon'
+    return f'{n} {word} — förfaller om {delta} dagar'
+
+
 class BokioInvoicePortal(CustomerPortal):
 
     def _prepare_home_portal_values(self, counters):
         values = super()._prepare_home_portal_values(counters)
         if 'bokio_invoice_count' in counters:
             values['bokio_invoice_count'] = request.env['bokio.invoice'].search_count([])
+        values['bokio_invoice_subtext'] = _invoice_subtext(request.env)
         return values
 
     @http.route('/my/bokio-invoices', type='http', auth='user', website=True)
