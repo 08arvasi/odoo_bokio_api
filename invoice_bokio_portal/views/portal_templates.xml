@@ -75,7 +75,8 @@
                                             <t t-if="inv.has_pdf">
                                                 <a t-attf-href="/my/bokio-invoices/#{inv.id}/pdf"
                                                    class="btn btn-sm btn-outline-secondary"
-                                                   title="Ladda ner PDF">
+                                                   target="_blank"
+                                                   title="Öppna PDF">
                                                     <i class="fa fa-file-pdf-o"/>
                                                 </a>
                                             </t>
