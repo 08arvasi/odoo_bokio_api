@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Shadow -->
+  <rect x="18" y="13" width="40" height="52" rx="4" fill="#714B67" opacity="0.10"/>
+  <!-- Document body -->
+  <rect x="14" y="9" width="40" height="52" rx="4" fill="#F5F0FB" stroke="#714B67" stroke-width="2"/>
+  <!-- Folded corner -->
+  <path d="M42 9 L54 21 L42 21 Z" fill="#D6C9EC" stroke="#714B67" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Logo/header block -->
+  <rect x="20" y="17" width="14" height="5" rx="2" fill="#714B67" opacity="0.30"/>
+  <!-- Invoice rows -->
+  <rect x="20" y="30" width="25" height="2.5" rx="1.25" fill="#714B67" opacity="0.45"/>
+  <rect x="20" y="37" width="20" height="2.5" rx="1.25" fill="#714B67" opacity="0.45"/>
+  <rect x="20" y="44" width="23" height="2.5" rx="1.25" fill="#714B67" opacity="0.45"/>
+  <!-- Divider -->
+  <line x1="20" y1="50" x2="46" y2="50" stroke="#714B67" stroke-width="1" stroke-dasharray="2 2" opacity="0.40"/>
+  <!-- Total row (bold) -->
+  <rect x="20" y="53" width="25" height="3" rx="1.5" fill="#714B67" opacity="0.85"/>
+  <!-- kr badge -->
+  <circle cx="57" cy="55" r="12" fill="#C8A84B"/>
+  <text x="57" y="59.5" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="Arial, sans-serif">kr</text>
+</svg>

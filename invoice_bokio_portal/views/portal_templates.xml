@@ -6,6 +6,7 @@
         <xpath expr="//div[@id='portal_common_category']" position="before">
             <div class="o_portal_category row g-2 mt-3">
                 <t t-call="portal.portal_docs_entry">
+                    <t t-set="icon" t-value="/invoice_bokio_portal/static/src/img/portal-invoices.svg"/>
                     <t t-set="title">Fakturor</t>
                     <t t-set="text">Se dina fakturor från oss</t>
                     <t t-set="url">/my/bokio-invoices</t>
@@ -20,7 +21,8 @@
         <t t-call="portal.portal_layout">
             <t t-set="breadcrumbs_searchbar" t-value="True"/>
             <t t-call="portal.portal_searchbar">
-                <t t-set="title">Fakturor</t>
+                <t t-set="icon" t-value="/invoice_bokio_portal/static/src/img/portal-invoices.svg"/>
+                    <t t-set="title">Fakturor</t>
             </t>
             <t t-if="not invoices">
                 <div class="alert alert-info mt-3">Inga fakturor hittades.</div>
