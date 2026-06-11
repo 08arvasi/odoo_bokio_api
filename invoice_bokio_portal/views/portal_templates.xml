@@ -37,6 +37,7 @@
                                     <th>Förfaller</th>
                                     <th class="text-end">Belopp</th>
                                     <th class="text-end">Betalt</th>
+                                    <th class="d-none d-md-table-cell">Betaldatum</th>
                                     <th>Status</th>
                                     <th></th>
                                 </tr>
@@ -58,6 +59,11 @@
                                         <td class="text-end">
                                             <t t-out="'%.2f' % inv.amount_paid"/>
                                             <small class="text-muted ms-1"><t t-out="inv.currency"/></small>
+                                        </td>
+                                        <td class="d-none d-md-table-cell text-muted small">
+                                            <t t-if="inv.paid_detected_at">
+                                                <t t-out="str(inv.paid_detected_at)[:10]"/>
+                                            </t>
                                         </td>
                                         <td>
                                             <span t-attf-class="badge bg-#{status_badge.get(inv.bokio_status, 'secondary')}">
@@ -115,6 +121,12 @@
                                 <dd class="col-sm-7"><t t-out="invoice.issue_date or '&#8212;'"/></dd>
                                 <dt class="col-sm-5 text-muted">Förfallodatum</dt>
                                 <dd class="col-sm-7"><t t-out="invoice.due_date or '&#8212;'"/></dd>
+                                <t t-if="invoice.paid_detected_at">
+                                    <dt class="col-sm-5 text-muted">Betaldatum</dt>
+                                    <dd class="col-sm-7">
+                                        <t t-out="str(invoice.paid_detected_at)[:10]"/>
+                                    </dd>
+                                </t>
                             </dl>
                         </div>
                         <div class="col-md-6">
@@ -137,17 +149,35 @@
                             </dl>
                         </div>
                     </div>
+
+                    <!-- Knappar -->
                     <div class="mt-4">
                         <a href="/my/bokio-invoices" class="btn btn-outline-secondary btn-sm">
                             &#8592; Tillbaka till fakturalistan
                         </a>
                         <t t-if="invoice.has_pdf">
                             <a t-attf-href="/my/bokio-invoices/#{invoice.id}/pdf"
-                               class="btn btn-primary btn-sm ms-2">
+                               target="_blank"
+                               class="btn btn-outline-primary btn-sm ms-2">
                                 <i class="fa fa-download me-1"/> Ladda ner PDF
                             </a>
                         </t>
                     </div>
+
+                    <!-- Inline PDF-visning -->
+                    <t t-if="invoice.has_pdf">
+                        <div class="mt-4">
+                            <iframe t-attf-src="/my/bokio-invoices/#{invoice.id}/pdf"
+                                    width="100%"
+                                    height="780"
+                                    style="border: 1px solid #dee2e6; border-radius: 4px; display: block;">
+                                <p class="text-muted mt-2">
+                                    Din webbläsare kan inte visa PDF direkt.
+                                    <a t-attf-href="/my/bokio-invoices/#{invoice.id}/pdf">Ladda ner fakturan här.</a>
+                                </p>
+                            </iframe>
+                        </div>
+                    </t>
                 </div>
             </div>
         </t>
