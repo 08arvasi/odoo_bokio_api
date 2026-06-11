@@ -4,4 +4,11 @@
     <template id="portal_hide_vat" inherit_id="portal.address_form_fields" name="ARVAS: Hide VAT">
         <xpath expr="//div[@id='div_vat']" position="replace"/>
     </template>
+
+    <!-- Make portal tile icons visible (portal_docs_entry_layout requires website module) -->
+    <template id="portal_icon_visible" inherit_id="portal.portal_docs_entry" name="ARVAS: Portal icon visible">
+        <xpath expr="//div[hasclass('o_portal_icon')]" position="attributes">
+            <attribute name="class" remove="d-none" add="d-block align-self-start" separator=" "/>
+        </xpath>
+    </template>
 </odoo>
