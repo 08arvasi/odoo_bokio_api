@@ -180,6 +180,10 @@ class BokioInvoice(models.Model):
             )
             if country_rec:
                 vals['country_id'] = country_rec.id
+        else:
+            se = self.env['res.country'].search([('code', '=', 'SE')], limit=1)
+            if se:
+                vals['country_id'] = se.id
 
         return self.env['res.partner'].create(vals)
 
