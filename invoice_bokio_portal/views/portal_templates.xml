@@ -45,11 +45,9 @@
                             </thead>
                             <tbody>
                                 <t t-foreach="invoices" t-as="inv">
-                                    <tr>
+                                    <tr t-attf-onclick="window.location='/my/bokio-invoices/#{inv.id}'" style="cursor:pointer">
                                         <td>
-                                            <a t-attf-href="/my/bokio-invoices/#{inv.id}">
-                                                <t t-out="inv.bokio_invoice_number"/>
-                                            </a>
+                                            <t t-out="inv.bokio_invoice_number"/>
                                         </td>
                                         <td><t t-out="inv.issue_date"/></td>
                                         <td><t t-out="inv.due_date"/></td>
@@ -71,7 +69,7 @@
                                                 <t t-out="status_labels.get(inv.bokio_status, inv.bokio_status)"/>
                                             </span>
                                         </td>
-                                        <td>
+                                        <td onclick="event.stopPropagation()">
                                             <t t-if="inv.has_pdf">
                                                 <a t-attf-href="/my/bokio-invoices/#{inv.id}/pdf"
                                                    class="btn btn-sm btn-outline-secondary"
