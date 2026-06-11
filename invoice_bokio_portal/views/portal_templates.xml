@@ -8,7 +8,7 @@
                 <t t-call="portal.portal_docs_entry">
                     <t t-set="icon" t-value="/invoice_bokio_portal/static/src/img/portal-invoices.svg"/>
                     <t t-set="title">Fakturor</t>
-                    <t t-set="text" t-value="bokio_invoice_subtext or'Se dina fakturor från oss'"/>
+                    <t t-set="text" t-value="bokio_invoice_subtext"/>
                     <t t-set="url">/my/bokio-invoices</t>
                     <t t-set="placeholder_count">bokio_invoice_count</t>
                 </t>
