@@ -60,7 +60,7 @@
                                             <t t-out="'%.2f' % inv.amount_paid"/>
                                             <small class="text-muted ms-1"><t t-out="inv.currency"/></small>
                                         </td>
-                                        <td class="d-none d-md-table-cell text-muted small">
+                                        <td class="d-none d-md-table-cell">
                                             <t t-if="inv.paid_detected_at">
                                                 <t t-out="str(inv.paid_detected_at)[:10]"/>
                                             </t>
