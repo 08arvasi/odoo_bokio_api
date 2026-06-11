@@ -10,7 +10,6 @@
                     <t t-set="text">Se dina fakturor från oss</t>
                     <t t-set="url">/my/bokio-invoices</t>
                     <t t-set="placeholder_count">bokio_invoice_count</t>
-                    <t t-set="show_count" t-value="True"/>
                 </t>
             </div>
         </xpath>
