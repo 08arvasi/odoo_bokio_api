@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Hide VAT field in portal address form -->
+    <template id="portal_hide_vat" inherit_id="portal.address_form_fields" name="ARVAS: Hide VAT">
+        <xpath expr="//div[@id='div_vat']" position="replace"/>
+    </template>
+</odoo>

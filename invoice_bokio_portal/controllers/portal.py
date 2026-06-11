@@ -122,3 +122,17 @@ class BokioInvoicePortal(CustomerPortal):
                 ('Content-Disposition', 'inline; filename="{}"'.format(attachment.name)),
             ],
         )
+
+
+class ArvasPortalCustom(CustomerPortal):
+    """Remove phone from mandatory fields and other ARVAS portal customizations."""
+
+    def _get_mandatory_billing_address_fields(self, country_sudo):
+        fields = super()._get_mandatory_billing_address_fields(country_sudo)
+        fields.discard('phone')
+        return fields
+
+    def _get_mandatory_delivery_address_fields(self, country_sudo):
+        fields = super()._get_mandatory_delivery_address_fields(country_sudo)
+        fields.discard('phone')
+        return fields
