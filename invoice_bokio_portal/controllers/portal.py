@@ -64,7 +64,10 @@ class BokioInvoicePortal(CustomerPortal):
         values = super()._prepare_home_portal_values(counters)
         if 'bokio_invoice_count' in counters:
             values['bokio_invoice_count'] = request.env['bokio.invoice'].search_count([])
-        values['bokio_invoice_subtext'] = _invoice_subtext(request.env)
+        # Only on full page render — counter AJAX calls pass counters list
+        # and the JS would crash trying to find a DOM element for this key
+        if not counters:
+            values['bokio_invoice_subtext'] = _invoice_subtext(request.env)
         return values
 
     @http.route('/my/bokio-invoices', type='http', auth='user', website=True)
