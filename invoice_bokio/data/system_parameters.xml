@@ -13,18 +13,17 @@
     <field name="value"></field>
   </record>
 
-  <!-- bokio.sync.from_date — Startdatum för synk (YYYY-MM-DD).
-       Default: innevarande räkenskapsår (1 sep).
-       Ändra till t.ex. 2024-09-01 för föregående VÅ. -->
-  <record id="param_bokio_sync_from_date" model="ir.config_parameter">
-    <field name="key">bokio.sync.from_date</field>
-    <field name="value">2025-09-01</field>
-  </record>
-
   <!-- bokio.sync.filter_keyword — Filtrera på nyckelord i radtext (t.ex. jessica).
        Lämna tomt för att synka alla fakturor. -->
   <record id="param_bokio_sync_filter_keyword" model="ir.config_parameter">
     <field name="key">bokio.sync.filter_keyword</field>
+    <field name="value"></field>
+  </record>
+
+  <!-- bokio.sync.contact_type — Märkning som sätts på kontakter skapade vid synk.
+       Exempel: jessica, peter, aiab. Lämna tomt för ingen märkning. -->
+  <record id="param_bokio_sync_contact_type" model="ir.config_parameter">
+    <field name="key">bokio.sync.contact_type</field>
     <field name="value"></field>
   </record>
 
