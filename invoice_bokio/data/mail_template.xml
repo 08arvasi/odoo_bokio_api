@@ -1,24 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo>
+<!--
+  noupdate="1" — mallen installeras vid första installation och skrivs sedan
+  ALDRIG över vid uppgradering. Konfigurera avsändare, brödtext och signatur
+  manuellt per databas via Odoo UI (Teknisk → E-post → Mallar).
+-->
+<odoo noupdate="1">
   <record id="mail_template_payment_confirmation" model="mail.template">
-    <field name="name">Bokio: Payment Confirmation</field>
+    <field name="name">Bokio: Betalningsbekräftelse</field>
     <field name="model_id" search="[('model', '=', 'bokio.invoice')]"/>
-    <field name="subject">Betalningsbekräftelse — faktura {{ object.bokio_invoice_number }}</field>
+    <field name="subject">Tack för betalningen – faktura {{ object.bokio_invoice_number }}</field>
+
+    <!-- Anpassa avsändare per databas -->
     <field name="email_from">ekonomi@arvas.international</field>
     <field name="email_to">{{ object.partner_id.email }}</field>
+
     <field name="body_html" type="html">
-      <p>Hej <t t-out="object.partner_id.name"/>,</p>
+      <p>Hej <t t-esc="object.partner_id.name.split()[0]"/>,</p>
+
       <p>
-        Tack! Vi har tagit emot din betalning för faktura
-        <strong><t t-out="object.bokio_invoice_number"/></strong>
-        på <t t-out="object.amount_total"/> <t t-out="object.currency"/>.
+        Vi har tagit emot din betalning på
+        <strong>
+          <t t-esc="'{:,.0f}'.format(object.amount_total).replace(',', ' ')"/>
+          <t t-out="object.currency"/>
+        </strong>
+        för faktura <strong><t t-out="object.bokio_invoice_number"/></strong>.
+        Tack — det uppskattas!
       </p>
+
       <p>
-        Med vänliga hälsningar,<br/>
-        Jessica Leijer<br/>
-        Leg. psykolog
+        Hör gärna av dig om du har några frågor.
+      </p>
+
+      <p>
+        Varmt,<br/>
+        <!-- Anpassa signatur per databas -->
+        Arvas International AB
       </p>
     </field>
+
     <field name="auto_delete">True</field>
   </record>
 </odoo>
