@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+  <!-- Search view extensions: filter + group by on bokio_contact_type -->
+  <record id="view_partner_search_bokio" model="ir.ui.view">
+    <field name="name">res.partner.search.bokio</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_res_partner_filter"/>
+    <field name="arch" type="xml">
+      <xpath expr="//group[@name='group_by']" position="before">
+        <separator/>
+        <filter string="Har Bokio-typ" name="has_bokio_contact_type"
+                domain="[('bokio_contact_type', '!=', False), ('bokio_contact_type', '!=', '')]"/>
+      </xpath>
+      <xpath expr="//group[@name='group_by']" position="inside">
+        <filter string="Bokio-kontexttyp" name="group_bokio_contact_type"
+                context="{'group_by': 'bokio_contact_type'}"/>
+      </xpath>
+    </field>
+  </record>
+
   <!-- Bokio tab on the contact form -->
   <record id="view_partner_form_bokio" model="ir.ui.view">
     <field name="name">res.partner.form.bokio</field>
