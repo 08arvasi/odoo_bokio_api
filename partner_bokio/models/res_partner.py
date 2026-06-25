@@ -47,6 +47,13 @@ class ResPartner(models.Model):
              "Odoo → Odoo pushes to Bokio (create or update).\n"
              "Odoo only → local contact, never synced to Bokio.",
     )
+    bokio_contact_type = fields.Char(
+        string="Kontexttyp",
+        index=True,
+        copy=False,
+        help="Synkdestination för denna kontakt: 'jessica', 'peter', 'aiab' m.fl.\n"
+             "Sätts automatiskt vid synk. Admin kan ändra manuellt.",
+    )
 
     def action_sync_to_bokio(self):
         """Sync selected partners to Bokio. Bound to the list view Actions menu."""

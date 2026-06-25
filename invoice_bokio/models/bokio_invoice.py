@@ -100,6 +100,19 @@ class BokioInvoice(models.Model):
         return BokioClient(token=token, company_id=company_id)
 
     @api.model
+    def _get_contact_type(self) -> str:
+        """Return contact type tag for partners created during sync.
+
+        System parameter: bokio.sync.contact_type
+        Example value:    jessica
+        Defaults to empty string (no tag set).
+        """
+        val = self.env['ir.config_parameter'].sudo().get_param(
+            'bokio.sync.contact_type', ''
+        )
+        return (val or '').strip().lower()
+
+    @api.model
     def _get_filter_keyword(self) -> str:
         """Return lowercase filter keyword, or '' to sync all invoices.
 
@@ -143,6 +156,7 @@ class BokioInvoice(models.Model):
         if not name:
             return self.env['res.partner']
 
+        contact_type = self._get_contact_type()
         vals = {
             'name': name,
             'is_company': bokio_data.get('type', '').lower() == 'company',
@@ -150,6 +164,8 @@ class BokioInvoice(models.Model):
             'bokio_master': 'bokio',
             'bokio_synced_at': fields.Datetime.now(),
         }
+        if contact_type:
+            vals['bokio_contact_type'] = contact_type
 
         contacts = bokio_data.get('contactsDetails', [])
         default_contact = next(
