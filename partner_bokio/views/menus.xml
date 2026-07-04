@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+  <!-- Contacts > Kontakter (scoped to bokio.sync.contact_type, if set) -->
+  <menuitem
+    id="menu_partner_bokio_contacts"
+    name="Kontakter"
+    parent="contacts.menu_contacts"
+    action="action_open_bokio_contacts"
+    sequence="5"/>
+
   <!-- Contacts > Bokio Sync Status -->
   <menuitem
     id="menu_partner_bokio_sync"

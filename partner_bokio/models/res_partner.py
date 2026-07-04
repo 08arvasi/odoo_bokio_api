@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 # Make bokio_api importable when running inside the Odoo container.
@@ -54,6 +54,28 @@ class ResPartner(models.Model):
         help="Synkdestination för denna kontakt: 'jessica', 'peter', 'aiab' m.fl.\n"
              "Sätts automatiskt vid synk. Admin kan ändra manuellt.",
     )
+
+    @api.model
+    def action_open_bokio_contacts(self):
+        """Open a Contacts list scoped to this database's Bokio contact type.
+
+        Reads system parameter bokio.sync.contact_type (same one the invoice
+        sync uses to route contacts, e.g. 'jessica'). Empty param means this
+        database isn't scoped to a single context (e.g. aiab19e) — show all.
+        """
+        contact_type = self.env['ir.config_parameter'].sudo().get_param(
+            'bokio.sync.contact_type', ''
+        ).strip().lower()
+        domain = [('bokio_contact_type', '=', contact_type)] if contact_type else []
+        context = {'default_bokio_contact_type': contact_type} if contact_type else {}
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Kontakter',
+            'res_model': 'res.partner',
+            'view_mode': 'list,form',
+            'domain': domain,
+            'context': context,
+        }
 
     def action_sync_to_bokio(self):
         """Sync selected partners to Bokio. Bound to the list view Actions menu."""
