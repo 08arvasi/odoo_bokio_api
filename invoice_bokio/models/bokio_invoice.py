@@ -75,13 +75,29 @@ class BokioInvoice(models.Model):
 
     @api.model
     def _search_bokio_visible(self, operator, value):
+        """Translate a search on bokio_visible into a real partner_id domain.
+
+        The ir.rule domain_force [('bokio_visible', '=', True)] doesn't
+        necessarily reach us as operator='=' — Odoo's rule-combination logic
+        normalizes it to operator='in', value=[True] before calling this
+        method, and other callers may use '!=' / 'not in'. Handling only '='
+        silently fell through to the negated (wrong-context) domain for
+        every real-world call, which is exactly what leaked wrong-context
+        invoices into Jessica's list (confirmed 2026-07-05).
+        """
         contact_type = self._get_contact_type()
         if not contact_type:
             return []
-        wants_match = (operator == '=' and value) or (operator == '!=' and not value)
-        if wants_match:
-            return [('partner_id.bokio_contact_type', '=', contact_type)]
-        return [('partner_id.bokio_contact_type', '!=', contact_type)]
+        if operator in ('=', '!='):
+            match_wanted = bool(value) if operator == '=' else not bool(value)
+        elif operator in ('in', 'not in'):
+            values = value if isinstance(value, (list, tuple, set)) else [value]
+            match_wanted = (True in values) if operator == 'in' else (True not in values)
+        else:
+            raise ValueError(f"Unsupported operator {operator!r} for bokio_visible search")
+        domain = [('partner_id.bokio_contact_type', '=', contact_type)]
+        return domain if match_wanted else ['!'] + domain
+
     raw_json = fields.Text(string='Raw JSON')
 
     _unique_bokio_id = models.Constraint(
