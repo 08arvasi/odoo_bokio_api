@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from odoo import api, fields, models
+from odoo import Command, api, fields, models
 from odoo.exceptions import UserError
 
 # Make bokio_api importable when running inside the Odoo container.
@@ -61,10 +61,20 @@ class ResPartner(models.Model):
 
     @api.model
     def _sync_bokio_contacts_menu_visibility(self):
-        """Show either the stock Contacts app or the scoped Bokio Kontakter
-        app, depending on whether this database is scoped to a single Bokio
-        context (bokio.sync.contact_type set, e.g. konfident) or not (e.g.
-        aiab19e, where the stock Contacts app should behave normally).
+        """Scope the stock Contacts app to admins only when this database is
+        scoped to a single Bokio context (bokio.sync.contact_type set, e.g.
+        konfident) — regular internal users (e.g. Jessica) then only see the
+        dedicated Bokio Kontakter app instead. Unscoped databases (e.g. aiab)
+        keep the stock Contacts app's normal visibility.
+
+        Note: this is per-USER (via groups_id), not per-database "active" —
+        an earlier version toggled active=False, which hid Contacts from
+        every user including admins. ir.ui.menu.groups_id is an allow-list
+        (OR'd), so to exclude a plain internal user (group_user) while still
+        including admins (group_system, who are also group_user), the stock
+        group_user/group_partner_manager entries must be replaced with just
+        group_system — adding group_system alongside them would not exclude
+        anyone, since Jessica still matches group_user via OR.
 
         Runs on every registry load (container start, module upgrade) so it
         always reflects the current system parameter — no per-database XML
@@ -78,8 +88,18 @@ class ResPartner(models.Model):
         bokio_contacts_root = self.env.ref(
             'partner_bokio.menu_bokio_contacts_root', raise_if_not_found=False
         )
-        if stock_contacts_menu and stock_contacts_menu.active != (not scoped):
-            stock_contacts_menu.sudo().active = not scoped
+        if stock_contacts_menu:
+            stock_contacts_menu.sudo().active = True
+            if scoped:
+                admin_group = self.env.ref('base.group_system')
+                stock_contacts_menu.sudo().groups_id = [Command.set([admin_group.id])]
+            else:
+                user_group = self.env.ref('base.group_user')
+                creation_group = self.env.ref(
+                    'base.group_partner_manager', raise_if_not_found=False
+                )
+                group_ids = [user_group.id] + ([creation_group.id] if creation_group else [])
+                stock_contacts_menu.sudo().groups_id = [Command.set(group_ids)]
         if bokio_contacts_root and bokio_contacts_root.active != scoped:
             bokio_contacts_root.sudo().active = scoped
 
