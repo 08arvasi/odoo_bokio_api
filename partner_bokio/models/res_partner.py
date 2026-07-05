@@ -67,9 +67,9 @@ class ResPartner(models.Model):
         dedicated Bokio Kontakter app instead. Unscoped databases (e.g. aiab)
         keep the stock Contacts app's normal visibility.
 
-        Note: this is per-USER (via groups_id), not per-database "active" —
+        Note: this is per-USER (via group_ids), not per-database "active" —
         an earlier version toggled active=False, which hid Contacts from
-        every user including admins. ir.ui.menu.groups_id is an allow-list
+        every user including admins. ir.ui.menu.group_ids is an allow-list
         (OR'd), so to exclude a plain internal user (group_user) while still
         including admins (group_system, who are also group_user), the stock
         group_user/group_partner_manager entries must be replaced with just
@@ -89,17 +89,19 @@ class ResPartner(models.Model):
             'partner_bokio.menu_bokio_contacts_root', raise_if_not_found=False
         )
         if stock_contacts_menu:
-            stock_contacts_menu.sudo().active = True
+            if not stock_contacts_menu.active:
+                stock_contacts_menu.sudo().active = True
             if scoped:
                 admin_group = self.env.ref('base.group_system')
-                stock_contacts_menu.sudo().groups_id = [Command.set([admin_group.id])]
+                desired_ids = {admin_group.id}
             else:
                 user_group = self.env.ref('base.group_user')
                 creation_group = self.env.ref(
                     'base.group_partner_manager', raise_if_not_found=False
                 )
-                group_ids = [user_group.id] + ([creation_group.id] if creation_group else [])
-                stock_contacts_menu.sudo().groups_id = [Command.set(group_ids)]
+                desired_ids = {user_group.id} | ({creation_group.id} if creation_group else set())
+            if set(stock_contacts_menu.group_ids.ids) != desired_ids:
+                stock_contacts_menu.sudo().group_ids = [Command.set(list(desired_ids))]
         if bokio_contacts_root and bokio_contacts_root.active != scoped:
             bokio_contacts_root.sudo().active = scoped
 
