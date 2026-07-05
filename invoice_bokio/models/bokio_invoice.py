@@ -58,6 +58,30 @@ class BokioInvoice(models.Model):
     confirmation_sent_at = fields.Datetime(string='Confirmation Sent At', copy=False, readonly=True)
     has_pdf = fields.Boolean(string='PDF', default=False, copy=False)
     last_synced = fields.Datetime(string='Last Synced', readonly=True)
+    bokio_visible = fields.Boolean(
+        string='Synlig i denna Bokio-kontext',
+        compute='_compute_bokio_visible',
+        search='_search_bokio_visible',
+        help="False if this invoice's customer belongs to a different Bokio "
+             "context than this database's bokio.sync.contact_type. Backs "
+             "the ir.rule that hides invoices from the wrong context.",
+    )
+
+    def _compute_bokio_visible(self):
+        contact_type = self._get_contact_type()
+        for invoice in self:
+            partner_type = (invoice.partner_id.bokio_contact_type or '').strip().lower()
+            invoice.bokio_visible = (not contact_type) or (partner_type == contact_type)
+
+    @api.model
+    def _search_bokio_visible(self, operator, value):
+        contact_type = self._get_contact_type()
+        if not contact_type:
+            return []
+        wants_match = (operator == '=' and value) or (operator == '!=' and not value)
+        if wants_match:
+            return [('partner_id.bokio_contact_type', '=', contact_type)]
+        return [('partner_id.bokio_contact_type', '!=', contact_type)]
     raw_json = fields.Text(string='Raw JSON')
 
     _unique_bokio_id = models.Constraint(

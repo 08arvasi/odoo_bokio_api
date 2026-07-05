@@ -21,6 +21,7 @@ Konfiguration (Settings > Technical > System Parameters):
     "depends": ["contacts", "mail", "partner_bokio"],
     "data": [
         "security/ir.model.access.csv",
+        "security/bokio_invoice_rules.xml",
         "data/mail_template.xml",
         "data/cron.xml",
         "data/system_parameters.xml",

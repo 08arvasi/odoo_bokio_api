@@ -55,6 +55,34 @@ class ResPartner(models.Model):
              "Sätts automatiskt vid synk. Admin kan ändra manuellt.",
     )
 
+    def _register_hook(self):
+        super()._register_hook()
+        self._sync_bokio_contacts_menu_visibility()
+
+    @api.model
+    def _sync_bokio_contacts_menu_visibility(self):
+        """Show either the stock Contacts app or the scoped Bokio Kontakter
+        app, depending on whether this database is scoped to a single Bokio
+        context (bokio.sync.contact_type set, e.g. konfident) or not (e.g.
+        aiab19e, where the stock Contacts app should behave normally).
+
+        Runs on every registry load (container start, module upgrade) so it
+        always reflects the current system parameter — no per-database XML
+        needed since this module's code is shared across databases.
+        """
+        contact_type = self.env['ir.config_parameter'].sudo().get_param(
+            'bokio.sync.contact_type', ''
+        ).strip().lower()
+        scoped = bool(contact_type)
+        stock_contacts_menu = self.env.ref('contacts.menu_contacts', raise_if_not_found=False)
+        bokio_contacts_root = self.env.ref(
+            'partner_bokio.menu_bokio_contacts_root', raise_if_not_found=False
+        )
+        if stock_contacts_menu and stock_contacts_menu.active != (not scoped):
+            stock_contacts_menu.sudo().active = not scoped
+        if bokio_contacts_root and bokio_contacts_root.active != scoped:
+            bokio_contacts_root.sudo().active = scoped
+
     @api.model
     def action_open_bokio_contacts(self):
         """Open a Contacts list scoped to this database's Bokio contact type.

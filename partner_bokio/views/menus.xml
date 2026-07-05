@@ -1,20 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-  <!-- Contacts > Bokio kontakter (scoped to bokio.sync.contact_type, if set) -->
+  <!-- New top-level app, replacing the stock Contacts app in databases
+       scoped to a single Bokio context (see _sync_bokio_contacts_menu_visibility
+       in res_partner.py, which toggles active on this vs contacts.menu_contacts).
+       Left active by default; the hook deactivates it in unscoped databases
+       like aiab19e where the stock Contacts app should be used instead. -->
+  <menuitem
+    id="menu_bokio_contacts_root"
+    name="Bokio Kontakter"
+    sequence="10"/>
+
+  <!-- Bokio Kontakter > Bokio kontakter (scoped to bokio.sync.contact_type, if set) -->
   <menuitem
     id="menu_partner_bokio_contacts"
     name="Bokio kontakter"
-    parent="contacts.menu_contacts"
+    parent="menu_bokio_contacts_root"
     action="action_open_bokio_contacts"
-    sequence="5"/>
+    sequence="10"/>
 
-  <!-- Contacts > Bokio Sync Status -->
+  <!-- Bokio Kontakter > Bokio Sync Status -->
   <menuitem
     id="menu_partner_bokio_sync"
     name="Bokio Sync Status"
-    parent="contacts.menu_contacts"
+    parent="menu_bokio_contacts_root"
     action="action_partner_bokio_sync"
-    sequence="50"/>
+    sequence="20"/>
 
 </odoo>
