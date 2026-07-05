@@ -70,7 +70,7 @@ class ResPartner(models.Model):
         context = {'default_bokio_contact_type': contact_type} if contact_type else {}
         return {
             'type': 'ir.actions.act_window',
-            'name': 'Kontakter',
+            'name': 'Bokio kontakter',
             'res_model': 'res.partner',
             'view_mode': 'list,form',
             'domain': domain,

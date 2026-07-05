@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-  <!-- Contacts > Kontakter (scoped to bokio.sync.contact_type, if set) -->
+  <!-- Contacts > Bokio kontakter (scoped to bokio.sync.contact_type, if set) -->
   <menuitem
     id="menu_partner_bokio_contacts"
-    name="Kontakter"
+    name="Bokio kontakter"
     parent="contacts.menu_contacts"
     action="action_open_bokio_contacts"
     sequence="5"/>
