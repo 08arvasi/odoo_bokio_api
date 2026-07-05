@@ -111,7 +111,7 @@ class ResPartner(models.Model):
 
         Reads system parameter bokio.sync.contact_type (same one the invoice
         sync uses to route contacts, e.g. 'jessica'). Empty param means this
-        database isn't scoped to a single context (e.g. aiab19e) — show all.
+        database isn't scoped to a single context (e.g. aiab) — show all.
         """
         contact_type = self.env['ir.config_parameter'].sudo().get_param(
             'bokio.sync.contact_type', ''
@@ -126,6 +126,24 @@ class ResPartner(models.Model):
             'domain': domain,
             'context': context,
         }
+
+    @api.model
+    def action_open_bokio_sync_status(self):
+        """Same as action_partner_bokio_sync's stock domain, but additionally
+        scoped to this database's bokio.sync.contact_type — otherwise Jessica
+        sees every contact's sync status, not just her own context's.
+        """
+        contact_type = self.env['ir.config_parameter'].sudo().get_param(
+            'bokio.sync.contact_type', ''
+        ).strip().lower()
+        action = self.env['ir.actions.act_window']._for_xml_id(
+            'partner_bokio.action_partner_bokio_sync'
+        )
+        domain = [('type', '=', 'contact'), ('active', '=', True)]
+        if contact_type:
+            domain.append(('bokio_contact_type', '=', contact_type))
+        action['domain'] = domain
+        return action
 
     def action_sync_to_bokio(self):
         """Sync selected partners to Bokio. Bound to the list view Actions menu."""
