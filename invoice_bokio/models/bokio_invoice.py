@@ -58,46 +58,6 @@ class BokioInvoice(models.Model):
     confirmation_sent_at = fields.Datetime(string='Confirmation Sent At', copy=False, readonly=True)
     has_pdf = fields.Boolean(string='PDF', default=False, copy=False)
     last_synced = fields.Datetime(string='Last Synced', readonly=True)
-    bokio_visible = fields.Boolean(
-        string='Synlig i denna Bokio-kontext',
-        compute='_compute_bokio_visible',
-        search='_search_bokio_visible',
-        help="False if this invoice's customer belongs to a different Bokio "
-             "context than this database's bokio.sync.contact_type. Backs "
-             "the ir.rule that hides invoices from the wrong context.",
-    )
-
-    def _compute_bokio_visible(self):
-        contact_type = self._get_contact_type()
-        for invoice in self:
-            partner_type = (invoice.partner_id.bokio_contact_type or '').strip().lower()
-            invoice.bokio_visible = (not contact_type) or (partner_type == contact_type)
-
-    @api.model
-    def _search_bokio_visible(self, operator, value):
-        """Translate a search on bokio_visible into a real partner_id domain.
-
-        The ir.rule domain_force [('bokio_visible', '=', True)] doesn't
-        necessarily reach us as operator='=' — Odoo's rule-combination logic
-        normalizes it to operator='in', value=[True] before calling this
-        method, and other callers may use '!=' / 'not in'. Handling only '='
-        silently fell through to the negated (wrong-context) domain for
-        every real-world call, which is exactly what leaked wrong-context
-        invoices into Jessica's list (confirmed 2026-07-05).
-        """
-        contact_type = self._get_contact_type()
-        if not contact_type:
-            return []
-        if operator in ('=', '!='):
-            match_wanted = bool(value) if operator == '=' else not bool(value)
-        elif operator in ('in', 'not in'):
-            values = value if isinstance(value, (list, tuple, set)) else [value]
-            match_wanted = (True in values) if operator == 'in' else (True not in values)
-        else:
-            raise ValueError(f"Unsupported operator {operator!r} for bokio_visible search")
-        domain = [('partner_id.bokio_contact_type', '=', contact_type)]
-        return domain if match_wanted else ['!'] + domain
-
     raw_json = fields.Text(string='Raw JSON')
 
     _unique_bokio_id = models.Constraint(
@@ -151,6 +111,41 @@ class BokioInvoice(models.Model):
             'bokio.sync.contact_type', ''
         )
         return (val or '').strip().lower()
+
+    def _register_hook(self):
+        super()._register_hook()
+        self._sync_bokio_invoice_context_rule()
+
+    @api.model
+    def _sync_bokio_invoice_context_rule(self):
+        """Bake the current bokio.sync.contact_type value into the scoping
+        ir.rule's domain_force.
+
+        A previous version used a compute+search Boolean field so domain_force
+        (a static XML string) could reference a dynamic system parameter. That
+        broke: search() returned empty results even for records that should
+        have matched (confirmed 2026-07-05 — check_access() succeeded but
+        search() on the same id returned nothing), likely a mismatch between
+        how Odoo's rule-combination applies a custom search()-translated
+        domain to the actual SQL query. Writing the literal value straight
+        into domain_force sidesteps that translation layer entirely — plain
+        relational domain, no custom field involved.
+
+        Runs on every registry load (container start, module upgrade) so it
+        always reflects the current parameter, without per-database XML.
+        """
+        rule = self.env.ref(
+            'invoice_bokio.bokio_invoice_contact_type_rule', raise_if_not_found=False
+        )
+        if not rule:
+            return
+        contact_type = self._get_contact_type()
+        if contact_type:
+            desired = repr([('partner_id.bokio_contact_type', '=', contact_type)])
+        else:
+            desired = repr([(1, '=', 1)])
+        if rule.domain_force != desired:
+            rule.sudo().domain_force = desired
 
     @api.model
     def _get_filter_keyword(self) -> str:
