@@ -1,9 +1,10 @@
-{
+﻿{
     "name": "Bokio Partner Connector",
     "version": "19.0.1.0.0",
     "summary": "Synchronise res.partner with Bokio customers — stores Bokio ID, customer number and sync status",
     "author": "Arvas International AB",
     "license": "LGPL-3",
+    "url": "https://github.com/08arvasi/odoo_bokio_api",
     "category": "Contacts",
     "depends": ["contacts"],
     "data": [

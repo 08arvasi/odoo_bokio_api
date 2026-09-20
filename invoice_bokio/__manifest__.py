@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "Bokio Invoice Sync",
     "version": "19.0.1.0.0",
     "summary": "Sync invoices from Bokio — payment confirmation on paid status",
@@ -17,6 +17,7 @@ Konfiguration (Settings > Technical > System Parameters):
     """,
     "author": "Arvas International AB",
     "license": "LGPL-3",
+    "url": "https://github.com/08arvasi/odoo_bokio_api",
     "category": "Invoicing",
     "depends": ["contacts", "mail", "partner_bokio"],
     "data": [
