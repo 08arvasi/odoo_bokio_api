@@ -41,4 +41,32 @@
 
     <field name="auto_delete">True</field>
   </record>
+
+  <record id="mail_template_partner_statement" model="mail.template">
+    <field name="name">Bokio: Fakturautdrag</field>
+    <field name="model_id" search="[('model', '=', 'res.partner')]"/>
+    <field name="subject">Fakturautdrag – {{ object.name }}</field>
+    <field name="email_from">ekonomi@arvas.international</field>
+    <field name="email_to">{{ object.email }}</field>
+    <field name="report_template_ids" eval="[(4, ref('invoice_bokio.action_report_bokio_partner_statement'))]"/>
+    <field name="auto_delete">False</field>
+    <field name="body_html" type="html">
+      <p>Hej <t t-esc="(object.name or '').split()[0]"/>,</p>
+
+      <p>
+        Bifogat finner du ett sammanställt fakturautdrag.
+      </p>
+
+      <p>
+        Hör gärna av dig om du har frågor.
+      </p>
+
+      <p>
+        Allt gott!<br/>
+        Fredrik Arvas<br/>
+        Arvas International AB<br/>
+        070-814 55 95 · fredrik@arvas.se
+      </p>
+    </field>
+  </record>
 </odoo>

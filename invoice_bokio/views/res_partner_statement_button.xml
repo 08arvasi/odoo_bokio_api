@@ -11,10 +11,16 @@
       <xpath expr="//button[@name='action_open_bokio_portal']" position="after">
         <button name="%(invoice_bokio.action_report_bokio_partner_statement)d"
                 type="action"
-                string="Fakturautdrag"
+                string="Visa fakturautdrag"
                 class="btn btn-secondary ms-2"
                 invisible="not bokio_id"
-                title="Generera PDF-fakturautdrag för den här kunden"/>
+                title="Generera och visa PDF-fakturautdrag för den här kunden"/>
+        <button name="action_send_statement"
+                type="object"
+                string="Skicka fakturautdrag"
+                class="btn btn-primary ms-2"
+                invisible="not bokio_id"
+                title="Öppna mailkompositor med fakturautdrag som bilaga"/>
       </xpath>
     </field>
   </record>
