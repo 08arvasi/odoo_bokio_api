@@ -23,7 +23,7 @@ class BokioInvoice(models.Model):
     _rec_name = 'bokio_invoice_number'
 
     bokio_id = fields.Char(string='Bokio ID', required=True, copy=False, index=True)
-    bokio_invoice_number = fields.Char(string='Invoice No.', copy=False)
+    bokio_invoice_number = fields.Integer(string='Invoice No.', copy=False)
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='set null', index=True)
     partner_email = fields.Char(
         related='partner_id.email',
@@ -56,6 +56,7 @@ class BokioInvoice(models.Model):
             "sent: confirmation mail actually sent.\n"
             "N/A: invoice was already paid when first imported — no mail sent.")
     confirmation_sent_at = fields.Datetime(string='Confirmation Sent At', copy=False, readonly=True)
+    bokio_payment_reference = fields.Char(string='OCR', copy=False)
     has_pdf = fields.Boolean(string='PDF', default=False, copy=False)
     last_synced = fields.Datetime(string='Last Synced', readonly=True)
     raw_json = fields.Text(string='Raw JSON')
@@ -343,7 +344,22 @@ class BokioInvoice(models.Model):
             raise UserError(f'Bokio API error: {exc}') from exc
 
         from_date = self._get_sync_from_date()
-        invoices = [inv for inv in invoices if (inv.get('invoiceDate') or '') >= from_date]
+        # Date filter — but always keep credit notes whose parent invoice passes.
+        date_passed_ids = {
+            inv['id'] for inv in invoices
+            if (inv.get('invoiceDate') or '') >= from_date
+        }
+        credit_note_ids_of_passed: set[str] = set()
+        for inv in invoices:
+            if inv['id'] in date_passed_ids:
+                for ref in inv.get('creditNoteRefs', []):
+                    cid = ref.get('id') if isinstance(ref, dict) else str(ref)
+                    if cid:
+                        credit_note_ids_of_passed.add(cid)
+        invoices = [
+            inv for inv in invoices
+            if inv['id'] in date_passed_ids or inv['id'] in credit_note_ids_of_passed
+        ]
 
         # ── Keyword filter ────────────────────────────────────────────────────
         # bokio.sync.filter_keyword: if set, only process invoices whose
@@ -385,7 +401,7 @@ class BokioInvoice(models.Model):
 
                 vals = {
                     'bokio_id': bokio_id,
-                    'bokio_invoice_number': inv.get('invoiceNumber', ''),
+                    'bokio_invoice_number': int(inv.get('invoiceNumber') or 0),
                     'partner_id': partner.id if partner else False,
                     'amount_total': inv.get('totalAmount', 0.0),
                     'amount_tax': inv.get('totalTax', 0.0),
@@ -395,6 +411,7 @@ class BokioInvoice(models.Model):
                     'due_date': inv.get('dueDate'),
                     'published_at': (inv.get('publishedDateTime') or '').replace('T', ' ').rstrip('Z') or False,
                     'bokio_status': new_status,
+                    'bokio_payment_reference': inv.get('paymentReference') or '',
                     'last_synced': now,
                     'raw_json': json.dumps(inv, ensure_ascii=False),
                 }

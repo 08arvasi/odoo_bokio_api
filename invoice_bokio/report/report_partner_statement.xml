@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- report_partner_statement.xml  v2.7  2026-09-21 -->
+<odoo>
+
+  <!-- Custom paperformat: margin_top=header_spacing=65 — tillräckligt för logo(15mm)+text(5mm+6rader) i staplad layout -->
+  <record id="paperformat_bokio_statement" model="report.paperformat">
+    <field name="name">Fakturautdrag A4</field>
+    <field name="format">A4</field>
+    <field name="orientation">Portrait</field>
+    <field name="margin_top">65</field>
+    <field name="margin_bottom">20</field>
+    <field name="margin_left">7</field>
+    <field name="margin_right">7</field>
+    <field name="header_line">False</field>
+    <field name="header_spacing">65</field>
+  </record>
+
+  <record id="action_report_bokio_partner_statement" model="ir.actions.report">
+    <field name="name">Fakturautdrag (Bokio)</field>
+    <field name="model">res.partner</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">invoice_bokio.report_bokio_partner_statement</field>
+    <field name="report_file">invoice_bokio.report_bokio_partner_statement</field>
+    <field name="binding_model_id" ref="base.model_res_partner"/>
+    <field name="binding_type">report</field>
+    <field name="paperformat_id" ref="invoice_bokio.paperformat_bokio_statement"/>
+    <field name="print_report_name">'Fakturautdrag_%s_%s' % (object.name.replace(' ', '_'), time.strftime('%Y-%m-%d'))</field>
+  </record>
+
+  <template id="report_bokio_partner_statement">
+    <t t-call="web.html_container">
+      <t t-foreach="docs" t-as="partner">
+        <t t-set="company"  t-value="env.company"/>
+        <t t-set="invoices" t-value="env['bokio.invoice'].search(
+            [('partner_id', '=', partner.id)],
+            order='bokio_invoice_number asc'
+        )"/>
+        <t t-set="overdue" t-value="invoices.filtered(lambda i: i.bokio_status == 'overdue')"/>
+        <t t-set="status_map" t-value="{
+            'draft':     'Utkast',
+            'published': 'Skickad',
+            'paid':      'Betald',
+            'overdue':   'Förfallen',
+            'overPaid':  'Överbetald',
+            'credited':  'Krediterad',
+        }"/>
+        <!-- Message substitution (only used when overdue) -->
+        <t t-set="first_name"     t-value="(partner.name or '').split()[0]"/>
+        <t t-set="overdue_count"  t-value="str(len(overdue))"/>
+        <t t-set="msg_raw"        t-value="env['ir.config_parameter'].sudo().get_param('bokio.statement.message', '')"/>
+        <t t-set="message"        t-value="msg_raw.replace('{first_name}', first_name).replace('{overdue_count}', overdue_count)"/>
+
+        <!-- ── PAGE HEADER  class="header"  ───────────────────────────────── -->
+        <!-- Absolut positionering: pålitligare än tabell i wkhtmltopdf header-kontext -->
+        <!-- Headerarea = margin_top 65mm; div-höjd 62mm lämnar 3mm luft mot separator -->
+        <div class="header" style="position:relative; height:62mm;">
+
+          <!-- Företagsblock: logo top:8mm, adresstext 5mm under logo -->
+          <div style="position:absolute; top:8mm; left:10mm;">
+            <t t-if="company.logo">
+              <img t-att-src="image_data_uri(company.logo)"
+                   style="max-height:46px; width:auto;"/>
+            </t>
+            <div style="margin-top:5mm; font-size:0.88em; line-height:1.45; color:#3d2e0a;">
+              <t t-if="company.report_header">
+                <div t-field="company.report_header"
+                     style="font-weight:bold; color:#c8a84b; font-size:1.08em; margin-bottom:1px;"/>
+              </t>
+              <div t-out="company.name"/>
+              <div t-if="company.street"  t-out="company.street"/>
+              <div t-if="company.street2" t-out="company.street2"/>
+              <t t-if="company.zip or company.city">
+                <div>
+                  <span t-if="company.zip"  t-out="company.zip"/>
+                  <t t-if="company.zip and company.city"> </t>
+                  <span t-if="company.city" t-out="company.city"/>
+                </div>
+              </t>
+              <div t-if="company.country_id" t-out="company.country_id.name"/>
+              <div t-if="company.vat">Moms: <span t-out="company.vat"/></div>
+            </div>
+          </div>
+
+          <!-- Kundblock: top = logo(8mm) + logo-höjd(~12mm) + gap(5mm) = 25mm -->
+          <div style="position:absolute; top:25mm; right:10mm;
+                      text-align:right; font-size:0.88em; line-height:1.5; color:#3d2e0a;">
+            <strong style="font-size:1.08em;" t-field="partner.name"/>
+            <t t-if="partner.street"><br/><span t-field="partner.street"/></t>
+            <t t-if="partner.street2"><br/><span t-field="partner.street2"/></t>
+            <t t-if="partner.zip or partner.city">
+              <br/>
+              <span t-if="partner.zip"  t-field="partner.zip"/>
+              <t t-if="partner.zip and partner.city"> </t>
+              <span t-if="partner.city" t-field="partner.city"/>
+            </t>
+            <t t-if="partner.country_id and partner.country_id.code != 'SE'">
+              <br/><span t-field="partner.country_id"/>
+            </t>
+          </div>
+
+          <!-- Guldseparator längst ner i headerarean -->
+          <div style="position:absolute; bottom:0; left:0; right:0;
+                      border-bottom:2px solid #c8a84b;"></div>
+
+        </div>
+
+        <!-- ── PAGE FOOTER  class="footer"  debug: grön  ──────────────────── -->
+        <!-- Odoo extraherar div.footer och skickar som footer-html till wkhtmltopdf -->
+        <!-- float:right används medvetet: table-layout kollapsar till 0px i footer-kontexten -->
+        <div class="footer" style="border:0; padding:5mm;">
+          <div style="margin-top:6mm; border-top:1px solid #ddd; padding-top:4px;
+                      font-size:0.72em; color:#999; overflow:hidden;">
+            <span style="float:right; margin-left:16px; padding-right:10mm; white-space:nowrap;">
+              Sida <span class="page"/> / <span class="topage"/>
+            </span>
+            <span>Konfident Psykologi, Jessica Leijer, leg. psykolog.<br/>Arvas international AB · Tvärvägen 4, 148 95 Muskö · https://arvas.international · Momsnr: SE556652613201 · info@arvas.international</span>
+          </div>
+        </div>
+
+        <!-- ── PAGE CONTENT  class="article"  debug: mörkblå  ─────────────── -->
+        <!-- Odoo extraherar div.article som sidans brödinnehåll -->
+        <div class="article" style="border:0; padding:5mm;">
+          <div class="page" style="padding:5mm; border:0;">
+
+            <h2 style="margin-top:10px; margin-bottom:16px;">Fakturautdrag</h2>
+
+            <!-- Personalized message from system parameter — only shown when overdue -->
+            <div t-if="overdue and message"
+                 style="font-size:0.93em; line-height:1.7; white-space:pre-line;
+                        margin-bottom:20px;">
+              <t t-out="message"/>
+            </div>
+
+            <!-- Overdue highlight in table (no separate box — message handles the text) -->
+
+            <!-- Invoice table -->
+            <table class="table table-sm" style="font-size:0.88em;">
+              <thead style="background:#c8a84b; color:#2a3f6f;">
+                <tr>
+                  <th style="width:55px; padding-left:8px;">Nr</th>
+                  <th style="width:80px;">OCR</th>
+                  <th>Fakturadatum</th>
+                  <th>Förfallodatum</th>
+                  <th style="width:72px;">Betalningsdatum</th>
+                  <th>Status</th>
+                  <th class="text-end">Belopp</th>
+                  <th style="width:38px; padding-right:8px;" class="text-end">Valuta</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="invoices" t-as="inv">
+                  <tr t-att-style="'background:#fff3cd;' if inv.bokio_status == 'overdue' else ''">
+                    <td style="padding-left:8px;" t-out="inv.bokio_invoice_number or ''"/>
+                    <td t-out="inv.bokio_payment_reference or ''"/>
+                    <td><span t-if="inv.issue_date" t-field="inv.issue_date"/></td>
+                    <td><span t-if="inv.due_date"   t-field="inv.due_date"/></td>
+                    <td><span t-if="inv.paid_detected_at"
+                              t-field="inv.paid_detected_at"
+                              t-options='{"widget": "date"}'/></td>
+                    <td t-out="status_map.get(inv.bokio_status, inv.bokio_status or '')"/>
+                    <td class="text-end"
+                        t-out="'{:,.2f}'.format(inv.amount_total).replace(',', ' ').replace('.', ',')"/>
+                    <td class="text-end" style="padding-right:8px;"
+                        t-out="inv.currency or 'SEK'"/>
+                  </tr>
+                </t>
+              </tbody>
+            </table>
+
+            <!-- Payment info -->
+            <div style="margin-top:20px; padding:12px 16px;
+                        background:#f7f2e8; border-left:4px solid #c8a84b;
+                        font-size:0.9em;">
+              <strong style="display:block; margin-bottom:8px;">Betalningsinformation</strong>
+              <table style="border-collapse:collapse;">
+                <tr>
+                  <td style="width:80px; padding:6px 8px; color:#555;">Bankgiro</td>
+                  <td style="padding:6px 8px;"><strong>5581-3257</strong></td>
+                </tr>
+                <tr>
+                  <td style="width:80px; padding:6px 8px; color:#555;">Swish</td>
+                  <td style="padding:6px 8px;"><strong>123-310 72 40</strong></td>
+                </tr>
+              </table>
+              <p style="margin-top:8px; margin-bottom:0; color:#555;">
+                Ange OCR-numret från respektive rad som betalningsreferens.
+              </p>
+            </div>
+
+            <!-- Contact note — below payment info, only when overdue -->
+            <div t-if="overdue"
+                 style="margin-top:10px; padding:10px 14px; font-size:0.9em;
+                        background:#f7f2e8; border-left:4px solid #c8a84b;">
+              Vänligen kontakta oss om du har frågor.
+            </div>
+
+            <!-- Closing -->
+            <div style="margin-top:36px; font-size:0.92em; line-height:1.8;">
+              <p style="margin-bottom:6px;">Allt gott!</p>
+              <p style="margin-bottom:2px;">Fredrik Arvas</p>
+              <p style="margin-bottom:0; color:#555;">070-814 55 95 · fredrik@arvas.se</p>
+            </div>
+
+          </div>
+        </div>
+
+      </t>
+    </t>
+  </template>
+
+</odoo>

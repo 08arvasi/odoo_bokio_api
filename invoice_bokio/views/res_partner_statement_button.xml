@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Add "Fakturautdrag" button to the Bokio tab on the partner form.
+       invoice_bokio depends on partner_bokio so this extension is safe here. -->
+  <record id="view_partner_form_bokio_statement_button" model="ir.ui.view">
+    <field name="name">res.partner.form.bokio.statement.button</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="partner_bokio.view_partner_form_bokio"/>
+    <field name="arch" type="xml">
+      <xpath expr="//button[@name='action_open_bokio_portal']" position="after">
+        <button name="%(invoice_bokio.action_report_bokio_partner_statement)d"
+                type="action"
+                string="Fakturautdrag"
+                class="btn btn-secondary ms-2"
+                invisible="not bokio_id"
+                title="Generera PDF-fakturautdrag för den här kunden"/>
+      </xpath>
+    </field>
+  </record>
+
+</odoo>

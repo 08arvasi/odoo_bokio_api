@@ -34,4 +34,18 @@
     <field name="value">0</field>
   </record>
 
+  <!-- bokio.statement.message — Brevtext i Fakturautdraget.
+       Platshållare: {first_name} = kundens förnamn, {overdue_count} = antal förfallna.
+       Visas endast när kunden har förfallna fakturor. -->
+  <record id="param_bokio_statement_message" model="ir.config_parameter">
+    <field name="key">bokio.statement.message</field>
+    <field name="value">Hej {first_name},
+
+Här kommer info om fakturering för tjänster från Jessica Leijer, leg. psykolog.
+Jag har tyvärr inte kunnat hitta betalningar för {overdue_count} förfallna fakturor (markerade nedan).
+Undersök på din sida och återkom med när de är betalade så kan jag bokföra dem korrekt.
+
+Om de inte är betalade ber vi om betalning enligt betalningsinfo nedan.</field>
+  </record>
+
 </odoo>

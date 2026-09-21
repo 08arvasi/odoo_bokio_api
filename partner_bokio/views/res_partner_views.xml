@@ -42,6 +42,11 @@
                   class="text-muted fst-italic">
               This contact is Odoo only — not synced to Bokio.
             </span>
+            <button name="action_open_bokio_portal" type="object"
+                    string="Portal"
+                    class="btn btn-secondary ms-2"
+                    invisible="not bokio_id"
+                    title="Öppna portalen för den här kunden"/>
           </div>
           <group>
             <group string="Identification">

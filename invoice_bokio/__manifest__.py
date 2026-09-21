@@ -1,6 +1,6 @@
 ﻿{
     "name": "Bokio Invoice Sync",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.2.0",
     "summary": "Sync invoices from Bokio — payment confirmation on paid status",
     "description": """
 Bokio Invoice Sync
@@ -29,6 +29,8 @@ Konfiguration (Settings > Technical > System Parameters):
         "views/bokio_invoice_views.xml",
         "views/bokio_sync_log_views.xml",
         "views/menus.xml",
+        "report/report_partner_statement.xml",
+        "views/res_partner_statement_button.xml",
     ],
     "installable": True,
     "application": False,
