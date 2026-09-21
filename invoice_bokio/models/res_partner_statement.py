@@ -21,6 +21,7 @@ class ResPartnerStatement(models.Model):
                 "default_res_ids": self.ids,
                 "default_template_id": template.id if template else False,
                 "default_composition_mode": "comment",
+                "default_partner_ids": [(4, self.id)],
                 "force_email": True,
             },
         }
