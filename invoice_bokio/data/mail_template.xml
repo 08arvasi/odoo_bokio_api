@@ -54,7 +54,9 @@
       <p>Hej <t t-esc="(object.name or '').split()[0]"/>,</p>
 
       <p>
-        Bifogat finner du ett sammanställt fakturautdrag.
+        Bifogat finner du ett sammanställt fakturautdrag för fakturor för Jessica Leijers psykologi-tjänster.<br/>
+        Vi saknar betalning för en eller flera fakturor.<br/>
+        Titta på den bifogade filen och se efter på din sida så vi får det rätt.
       </p>
 
       <p>
