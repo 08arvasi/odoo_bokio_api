@@ -47,8 +47,12 @@
         <!-- Message substitution (only used when overdue) -->
         <t t-set="first_name"     t-value="(partner.name or '').split()[0]"/>
         <t t-set="overdue_count"  t-value="str(len(overdue))"/>
+        <t t-set="_cw" t-value="{1:'en',2:'två',3:'tre',4:'fyra',5:'fem',6:'sex',7:'sju',8:'åtta',9:'nio',10:'tio'}"/>
+        <t t-set="_ct" t-value="_cw.get(len(overdue), 'flera')"/>
+        <t t-set="_cn" t-value="'faktura' if len(overdue) == 1 else 'fakturor'"/>
+        <t t-set="overdue_sentence" t-value="'Vi saknar betalning för ' + _ct + ' ' + _cn + '.'"/>
         <t t-set="msg_raw"        t-value="env['ir.config_parameter'].sudo().get_param('bokio.statement.message', '')"/>
-        <t t-set="message"        t-value="msg_raw.replace('{first_name}', first_name).replace('{overdue_count}', overdue_count)"/>
+        <t t-set="message"        t-value="msg_raw.replace('{first_name}', first_name).replace('{overdue_count}', overdue_count).replace('{overdue_sentence}', overdue_sentence)"/>
 
         <!-- ── PAGE HEADER  class="header"  ───────────────────────────────── -->
         <!-- Absolut positionering: pålitligare än tabell i wkhtmltopdf header-kontext -->
