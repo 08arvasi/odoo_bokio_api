@@ -25,7 +25,6 @@ class ResPartnerStatement(models.Model):
                 "default_composition_mode": "comment",
                 "default_partner_ids": [(4, self.id)],
                 "default_email_from": email_from,
-                "default_email_to": self.email or "",
                 "force_email": True,
             },
         }
