@@ -78,3 +78,87 @@ just den menyn.
 docker exec odoo19-odoo-1 odoo -d konfident --stop-after-init -u invoice_bokio
 docker restart odoo19-odoo-1
 ```
+
+## Ny databas — checklista
+
+Körs en gång per ny Odoo-databas som ska använda invoice_bokio.
+
+**1. Installera med profilmodul**
+```bash
+docker exec odoo19-odoo-1 odoo -c /etc/odoo/odoo.conf \
+  -d <dbname> -i odoo_<kundnamn> --stop-after-init
+docker compose restart odoo
+```
+
+**2. Sätt systemparametrar** (Settings → Technical → System Parameters)
+
+| Parameter | Exempel | Obligatorisk |
+|---|---|---|
+| `bokio.token` | `abc123...` | Ja |
+| `bokio.company_id` | `uuid-...` | Ja |
+| `bokio.sync.contact_type` | `niklas` | Ja om scopad databas |
+| `bokio.sync.filter_keyword` | `mrmusic` | Ja om delad Bokio-kontext |
+| `bokio.sync.from_date` | `2025-09-01` | Nej (default: innevarande räkenskapsår) |
+| `bokio.mail.confirmation.enabled` | `1` | Nej |
+
+**3. Starta om Odoo** efter att `bokio.sync.contact_type` satts — `_register_hook`
+måste köras om för att skriva rätt `domain_force` i `ir.rule`.
+
+---
+
+## `filter_keyword` — design och begränsningar
+
+`filter_keyword` matchar mot `lineItems[].description` på alla rader, inklusive
+`descriptionOnlyItem`-rader (textrader utan pris). Sökningen är case-insensitive
+substring-match.
+
+**Arkitekturbeslut (2026-09-25):** när flera kontexter delar ett Bokio-konto
+(t.ex. Jessica och Niklas/MrMusic båda under AIAB) måste nyckelordet finnas
+explicit i en fakturarad. Det räcker inte att kunden eller sammanhanget är
+"uppenbart" — koden ser bara radtexterna.
+
+Konsekvens: **varje kontext måste ha ett unikt nyckelord som konsekvent skrivs
+på fakturaraden.** Exempel: Jessica skriver "Jessica Leijer" i headerraden,
+MrMusic-fakturor ska alltid innehålla "mrmusic" i någon rad.
+
+Kundnamnet söks **inte** — avsiktligt, för att undvika att en kund som råkar
+heta "Niklas" hamnar i fel kontext.
+
+---
+
+## `_ensure_partner` — hur kontakter skapas och taggas
+
+`_ensure_partner(client, customer_ref_id)` anropas vid varje fakturasynk.
+Den söker på `bokio_id` — hittas ingen partner skapas en ny med `bokio_master='bokio'`.
+**`bokio_contact_type` sätts bara på nyskapade partners**, aldrig på befintliga.
+
+### Konsekvens: befintliga kontakter utan tagg hoppas över
+
+En partner som existerade i databasen innan `bokio.sync.contact_type` sattes
+har `bokio_contact_type = False` och syns inte — `ir.rule` filtrerar bort den.
+
+**Backfill via Odoo shell:**
+```bash
+docker exec odoo19-odoo-1 odoo shell -d <dbname> -c /etc/odoo/odoo.conf
+```
+```python
+# Tagga alla Bokio-kontakter som saknar kontexttyp
+env['res.partner'].search([
+    ('bokio_id', '!=', False),
+    ('bokio_contact_type', '=', False),
+]).write({'bokio_contact_type': 'niklas'})  # byt till rätt kontexttyp
+env.cr.commit()
+```
+
+---
+
+## Känd bugg fixad 2026-09-25 — dataladdningsordning i manifest
+
+`report/report_partner_statement.xml` måste laddas **före** `data/mail_template.xml`
+i `__manifest__.py`. Mail-mallen refererar till rapporten via `ref()` — vid
+uppgradering av en befintlig databas ligger rapporten redan i DB och det fungerar,
+men vid **nyinstallation** kraschade Odoo med:
+```
+ValueError: External ID not found in the system: invoice_bokio.action_report_bokio_partner_statement
+```
+Fixat i version 19.0.1.2.1 (commit 8ee7987).
