@@ -7,20 +7,24 @@
     <field name="model">bokio.invoice</field>
     <field name="arch" type="xml">
       <list string="Bokio Invoices" default_order="issue_date desc">
-        <field name="bokio_invoice_number"/>
+        <!-- partner_id måste vara första kolumn: Odoo renderar grupprubriken i första kolumnens cell,
+             och Integer-fältet bokio_invoice_number ger för litet utrymme → gruppnamn trunkeras. -->
         <field name="partner_id"/>
+        <field name="bokio_invoice_number" width="150px"/>
         <field name="partner_email" optional="show"/>
         <field name="issue_date"/>
         <field name="due_date" optional="show"/>
         <field name="paid_detected_at" string="Betaldatum" optional="show"/>
-        <field name="amount_total"/>
+        <field name="amount_total" string="Fakturerat"/>
+        <field name="amount_paid" string="Betalt" optional="show"/>
+        <field name="amount_remaining" string="Kvar" optional="show"/>
         <field name="currency" optional="hide"/>
-        <field name="bokio_status" widget="badge"
-               decoration-success="bokio_status == 'paid'"
-               decoration-warning="bokio_status == 'overdue'"
-               decoration-danger="bokio_status == 'credited'"
-               decoration-info="bokio_status == 'published'"
-               decoration-muted="bokio_status == 'draft'"/>
+        <field name="effective_status" widget="badge"
+               decoration-success="effective_status == 'paid'"
+               decoration-warning="effective_status in ('overdue', 'delbetald')"
+               decoration-danger="effective_status == 'credited'"
+               decoration-info="effective_status == 'published'"
+               decoration-muted="effective_status == 'draft'"/>
         <field name="has_pdf" widget="boolean_toggle" optional="show"/>
         <field name="confirmation_status" widget="badge"
                decoration-success="confirmation_status == 'sent'"

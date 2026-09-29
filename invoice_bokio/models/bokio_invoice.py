@@ -23,7 +23,7 @@ class BokioInvoice(models.Model):
     _rec_name = 'bokio_invoice_number'
 
     bokio_id = fields.Char(string='Bokio ID', required=True, copy=False, index=True)
-    bokio_invoice_number = fields.Integer(string='Invoice No.', copy=False)
+    bokio_invoice_number = fields.Integer(string='Invoice No.', copy=False, group_operator=False)
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='set null', index=True)
     partner_email = fields.Char(
         related='partner_id.email',
@@ -33,7 +33,10 @@ class BokioInvoice(models.Model):
     )
     amount_total = fields.Float(string='Total', digits=(12, 2))
     amount_tax = fields.Float(string='Tax', digits=(12, 2))
-    amount_paid = fields.Float(string='Paid Amount', digits=(12, 2))
+    amount_paid = fields.Float(string='Betalt', digits=(12, 2))
+    amount_remaining = fields.Float(
+        string='Kvar', compute='_compute_amount_remaining', store=True, digits=(12, 2)
+    )
     currency = fields.Char(string='Currency', default='SEK')
     issue_date = fields.Date(string='Invoice Date')
     due_date = fields.Date(string='Due Date')
@@ -46,6 +49,28 @@ class BokioInvoice(models.Model):
         ('overPaid', 'Overpaid'),
         ('credited', 'Credited'),
     ], string='Status', index=True)
+    effective_status = fields.Selection([
+        ('draft', 'Utkast'),
+        ('published', 'Skickad'),
+        ('paid', 'Betald'),
+        ('overdue', 'Förfallen'),
+        ('overPaid', 'Överbetald'),
+        ('credited', 'Krediterad'),
+        ('delbetald', 'Delbetald'),
+    ], string='Visningsstatus', compute='_compute_effective_status', store=True)
+
+    @api.depends('amount_total', 'amount_paid')
+    def _compute_amount_remaining(self):
+        for rec in self:
+            rec.amount_remaining = rec.amount_total - rec.amount_paid
+
+    @api.depends('bokio_status', 'amount_paid', 'amount_total')
+    def _compute_effective_status(self):
+        for rec in self:
+            if rec.amount_paid and 0 < rec.amount_paid < rec.amount_total:
+                rec.effective_status = 'delbetald'
+            else:
+                rec.effective_status = rec.bokio_status
     paid_detected_at = fields.Datetime(string='Paid Detected At', copy=False, readonly=True)
     confirmation_status = fields.Selection([
         ('pending', 'Pending'),
@@ -418,7 +443,7 @@ class BokioInvoice(models.Model):
 
                 is_new = not existing
                 if existing:
-                    if new_status == 'paid' and old_status != 'paid' and not existing.paid_detected_at:
+                    if not existing.paid_detected_at and inv.get('paidAmount', 0.0) > 0:
                         vals['paid_detected_at'] = now
                     existing.write(vals)
                     record = existing
