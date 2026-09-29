@@ -26,6 +26,8 @@
                decoration-info="effective_status == 'published'"
                decoration-muted="effective_status == 'draft'"/>
         <field name="has_pdf" widget="boolean_toggle" optional="show"/>
+        <button name="action_open_pdf" type="object" icon="fa-file-pdf-o"
+                title="Öppna PDF" invisible="not has_pdf" class="btn-link px-1"/>
         <field name="confirmation_status" widget="badge"
                decoration-success="confirmation_status == 'sent'"
                decoration-muted="confirmation_status == 'n_a'"
@@ -48,6 +50,9 @@
                   invisible="has_pdf == True"/>
           <button name="action_fetch_pdf" type="object" string="Ladda om PDF"
                   class="btn-secondary"
+                  invisible="has_pdf == False"/>
+          <button name="action_open_pdf" type="object" string="Öppna PDF"
+                  class="btn-primary"
                   invisible="has_pdf == False"/>
           <field name="bokio_status" widget="statusbar"
                  statusbar_visible="published,paid,overdue"/>
@@ -131,7 +136,7 @@
         <field name="issue_date"/>
         <field name="due_date"/>
         <templates>
-          <t t-name="kanban-box">
+          <t t-name="card">
             <div class="oe_kanban_card oe_kanban_global_click">
               <div class="o_kanban_record_top">
                 <div class="o_kanban_record_headings">

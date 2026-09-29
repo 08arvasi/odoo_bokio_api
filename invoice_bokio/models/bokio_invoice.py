@@ -83,6 +83,7 @@ class BokioInvoice(models.Model):
     confirmation_sent_at = fields.Datetime(string='Confirmation Sent At', copy=False, readonly=True)
     bokio_payment_reference = fields.Char(string='OCR', copy=False)
     has_pdf = fields.Boolean(string='PDF', default=False, copy=False)
+    pdf_url = fields.Char(string='PDF länk', compute='_compute_pdf_url', store=False)
     last_synced = fields.Datetime(string='Last Synced', readonly=True)
     raw_json = fields.Text(string='Raw JSON')
 
@@ -265,6 +266,28 @@ class BokioInvoice(models.Model):
         return self.env['res.partner'].create(vals)
 
     # ── PDF ────────────────────────────────────────────────────────────────────
+
+    @api.depends('has_pdf')
+    def _compute_pdf_url(self):
+        atts = self.env['ir.attachment'].search([
+            ('res_model', '=', 'bokio.invoice'),
+            ('res_id', 'in', self.ids),
+            ('mimetype', '=', 'application/pdf'),
+        ])
+        att_map = {a.res_id: a.id for a in atts}
+        for rec in self:
+            att_id = att_map.get(rec.id)
+            rec.pdf_url = f'/web/content/{att_id}?download=true' if att_id else False
+
+    def action_open_pdf(self):
+        self.ensure_one()
+        if not self.pdf_url:
+            raise UserError('Ingen PDF hittad för denna faktura.')
+        return {
+            'type': 'ir.actions.act_url',
+            'url': self.pdf_url,
+            'target': 'new',
+        }
 
     def _fetch_and_store_pdf(self, client) -> str | None:
         """Download PDF for this record and store as ir.attachment.
