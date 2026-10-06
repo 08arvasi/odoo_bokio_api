@@ -1,0 +1,92 @@
+# Swedish translation for invoice_bokio_portal
+# Copyright (C) 2026 Arvas International AB
+# License LGPL-3.0
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-20 00:00+0000\n"
+"PO-Revision-Date: 2026-09-20 00:00+0000\n"
+"Last-Translator: Arvas International AB <info@arvas.international>\n"
+"Language-Team: Swedish <info@arvas.international>\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: invoice_bokio_portal
+msgid "Fakturor"
+msgstr "Fakturor"
+
+#. module: invoice_bokio_portal
+msgid "Inga fakturor hittades."
+msgstr "Inga fakturor hittades."
+
+#. module: invoice_bokio_portal
+msgid "Fakturanr"
+msgstr "Fakturanr"
+
+#. module: invoice_bokio_portal
+msgid "Fakturadatum"
+msgstr "Fakturadatum"
+
+#. module: invoice_bokio_portal
+msgid "Förfaller"
+msgstr "Förfaller"
+
+#. module: invoice_bokio_portal
+msgid "Belopp"
+msgstr "Belopp"
+
+#. module: invoice_bokio_portal
+msgid "Betalt"
+msgstr "Betalt"
+
+#. module: invoice_bokio_portal
+msgid "Betaldatum"
+msgstr "Betaldatum"
+
+#. module: invoice_bokio_portal
+msgid "Öppna PDF"
+msgstr "Öppna PDF"
+
+#. module: invoice_bokio_portal
+msgid "Kund"
+msgstr "Kund"
+
+#. module: invoice_bokio_portal
+msgid "Förfallodatum"
+msgstr "Förfallodatum"
+
+#. module: invoice_bokio_portal
+msgid "Totalbelopp"
+msgstr "Totalbelopp"
+
+#. module: invoice_bokio_portal
+msgid "varav moms"
+msgstr "varav moms"
+
+#. module: invoice_bokio_portal
+msgid "Tillbaka till fakturalistan"
+msgstr "Tillbaka till fakturalistan"
+
+#. module: invoice_bokio_portal
+msgid "Ladda ner PDF"
+msgstr "Ladda ner PDF"
+
+#. module: invoice_bokio_portal
+msgid "Din webbläsare kan inte visa PDF direkt."
+msgstr "Din webbläsare kan inte visa PDF direkt."
+
+#. module: invoice_bokio_portal
+msgid "Ladda ner fakturan här."
+msgstr "Ladda ner fakturan här."
+
+#. module: invoice_bokio_portal
+msgid "Alla fakturor betalda"
+msgstr "Alla fakturor betalda"
+
+#. module: invoice_bokio_portal
+msgid "1 förfallen faktura"
+msgstr "1 förfallen faktura"

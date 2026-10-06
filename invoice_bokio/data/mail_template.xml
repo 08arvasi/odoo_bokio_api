@@ -41,4 +41,39 @@
 
     <field name="auto_delete">True</field>
   </record>
+
+  <record id="mail_template_partner_statement" model="mail.template">
+    <field name="name">Bokio: Fakturautdrag</field>
+    <field name="model_id" search="[('model', '=', 'res.partner')]"/>
+    <field name="subject">Fakturautdrag – {{ object.name }}</field>
+    <field name="email_from">ekonomi@arvas.international</field>
+    <field name="email_to">{{ object.email }}</field>
+    <field name="report_template_ids" eval="[(4, ref('invoice_bokio.action_report_bokio_partner_statement'))]"/>
+    <field name="auto_delete">False</field>
+    <field name="body_html" type="html">
+      <p>Hej <t t-esc="(object.name or '').split()[0]"/>,</p>
+
+      <p>
+        Bifogat finner du ett sammanställt fakturautdrag för fakturor för Jessica Leijers psykologi-tjänster.<br/>
+        Vi saknar betalning för en eller flera fakturor.<br/>
+        Titta på den bifogade filen och se efter på din sida så vi får det rätt.
+      </p>
+
+      <p>
+        Du kan se aktuell status via vår kundportal på <a href="https://konfident.arvas.international/">https://konfident.arvas.international/</a><br/>
+        om du saknar lösenordet klickar du på "återställ lösenord" så får du ett nytt.
+      </p>
+
+      <p>
+        Hör gärna av dig om du har frågor.
+      </p>
+
+      <p>
+        Allt gott!<br/>
+        Fredrik Arvas<br/>
+        Arvas International AB<br/>
+        070-814 55 95 · fredrik@arvas.se
+      </p>
+    </field>
+  </record>
 </odoo>

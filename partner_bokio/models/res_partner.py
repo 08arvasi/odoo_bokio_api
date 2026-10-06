@@ -324,3 +324,12 @@ class ResPartner(models.Model):
                 "next": {"type": "ir.actions.act_window_close"},
             },
         }
+
+    def action_open_bokio_portal(self):
+        """Open the Bokio invoice portal filtered to this partner (admin preview)."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/my/bokio-invoices?partner_id={self.id}",
+            "target": "new",
+        }

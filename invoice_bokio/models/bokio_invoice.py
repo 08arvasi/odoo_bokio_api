@@ -23,7 +23,7 @@ class BokioInvoice(models.Model):
     _rec_name = 'bokio_invoice_number'
 
     bokio_id = fields.Char(string='Bokio ID', required=True, copy=False, index=True)
-    bokio_invoice_number = fields.Char(string='Invoice No.', copy=False)
+    bokio_invoice_number = fields.Integer(string='Invoice No.', copy=False, group_operator=False)
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='set null', index=True)
     partner_email = fields.Char(
         related='partner_id.email',
@@ -33,7 +33,10 @@ class BokioInvoice(models.Model):
     )
     amount_total = fields.Float(string='Total', digits=(12, 2))
     amount_tax = fields.Float(string='Tax', digits=(12, 2))
-    amount_paid = fields.Float(string='Paid Amount', digits=(12, 2))
+    amount_paid = fields.Float(string='Betalt', digits=(12, 2))
+    amount_remaining = fields.Float(
+        string='Kvar', compute='_compute_amount_remaining', store=True, digits=(12, 2)
+    )
     currency = fields.Char(string='Currency', default='SEK')
     issue_date = fields.Date(string='Invoice Date')
     due_date = fields.Date(string='Due Date')
@@ -46,6 +49,28 @@ class BokioInvoice(models.Model):
         ('overPaid', 'Overpaid'),
         ('credited', 'Credited'),
     ], string='Status', index=True)
+    effective_status = fields.Selection([
+        ('draft', 'Utkast'),
+        ('published', 'Skickad'),
+        ('paid', 'Betald'),
+        ('overdue', 'Förfallen'),
+        ('overPaid', 'Överbetald'),
+        ('credited', 'Krediterad'),
+        ('delbetald', 'Delbetald'),
+    ], string='Visningsstatus', compute='_compute_effective_status', store=True)
+
+    @api.depends('amount_total', 'amount_paid')
+    def _compute_amount_remaining(self):
+        for rec in self:
+            rec.amount_remaining = rec.amount_total - rec.amount_paid
+
+    @api.depends('bokio_status', 'amount_paid', 'amount_total')
+    def _compute_effective_status(self):
+        for rec in self:
+            if rec.amount_paid and 0 < rec.amount_paid < rec.amount_total:
+                rec.effective_status = 'delbetald'
+            else:
+                rec.effective_status = rec.bokio_status
     paid_detected_at = fields.Datetime(string='Paid Detected At', copy=False, readonly=True)
     confirmation_status = fields.Selection([
         ('pending', 'Pending'),
@@ -56,7 +81,9 @@ class BokioInvoice(models.Model):
             "sent: confirmation mail actually sent.\n"
             "N/A: invoice was already paid when first imported — no mail sent.")
     confirmation_sent_at = fields.Datetime(string='Confirmation Sent At', copy=False, readonly=True)
+    bokio_payment_reference = fields.Char(string='OCR', copy=False)
     has_pdf = fields.Boolean(string='PDF', default=False, copy=False)
+    pdf_url = fields.Char(string='PDF länk', compute='_compute_pdf_url', store=False)
     last_synced = fields.Datetime(string='Last Synced', readonly=True)
     raw_json = fields.Text(string='Raw JSON')
 
@@ -240,6 +267,28 @@ class BokioInvoice(models.Model):
 
     # ── PDF ────────────────────────────────────────────────────────────────────
 
+    @api.depends('has_pdf')
+    def _compute_pdf_url(self):
+        atts = self.env['ir.attachment'].search([
+            ('res_model', '=', 'bokio.invoice'),
+            ('res_id', 'in', self.ids),
+            ('mimetype', '=', 'application/pdf'),
+        ])
+        att_map = {a.res_id: a.id for a in atts}
+        for rec in self:
+            att_id = att_map.get(rec.id)
+            rec.pdf_url = f'/web/content/{att_id}?download=true' if att_id else False
+
+    def action_open_pdf(self):
+        self.ensure_one()
+        if not self.pdf_url:
+            raise UserError('Ingen PDF hittad för denna faktura.')
+        return {
+            'type': 'ir.actions.act_url',
+            'url': self.pdf_url,
+            'target': 'new',
+        }
+
     def _fetch_and_store_pdf(self, client) -> str | None:
         """Download PDF for this record and store as ir.attachment.
         Returns None on success, error string on failure, 'skip' if already present.
@@ -343,7 +392,22 @@ class BokioInvoice(models.Model):
             raise UserError(f'Bokio API error: {exc}') from exc
 
         from_date = self._get_sync_from_date()
-        invoices = [inv for inv in invoices if (inv.get('invoiceDate') or '') >= from_date]
+        # Date filter — but always keep credit notes whose parent invoice passes.
+        date_passed_ids = {
+            inv['id'] for inv in invoices
+            if (inv.get('invoiceDate') or '') >= from_date
+        }
+        credit_note_ids_of_passed: set[str] = set()
+        for inv in invoices:
+            if inv['id'] in date_passed_ids:
+                for ref in inv.get('creditNoteRefs', []):
+                    cid = ref.get('id') if isinstance(ref, dict) else str(ref)
+                    if cid:
+                        credit_note_ids_of_passed.add(cid)
+        invoices = [
+            inv for inv in invoices
+            if inv['id'] in date_passed_ids or inv['id'] in credit_note_ids_of_passed
+        ]
 
         # ── Keyword filter ────────────────────────────────────────────────────
         # bokio.sync.filter_keyword: if set, only process invoices whose
@@ -385,7 +449,7 @@ class BokioInvoice(models.Model):
 
                 vals = {
                     'bokio_id': bokio_id,
-                    'bokio_invoice_number': inv.get('invoiceNumber', ''),
+                    'bokio_invoice_number': int(inv.get('invoiceNumber') or 0),
                     'partner_id': partner.id if partner else False,
                     'amount_total': inv.get('totalAmount', 0.0),
                     'amount_tax': inv.get('totalTax', 0.0),
@@ -395,13 +459,14 @@ class BokioInvoice(models.Model):
                     'due_date': inv.get('dueDate'),
                     'published_at': (inv.get('publishedDateTime') or '').replace('T', ' ').rstrip('Z') or False,
                     'bokio_status': new_status,
+                    'bokio_payment_reference': inv.get('paymentReference') or '',
                     'last_synced': now,
                     'raw_json': json.dumps(inv, ensure_ascii=False),
                 }
 
                 is_new = not existing
                 if existing:
-                    if new_status == 'paid' and old_status != 'paid' and not existing.paid_detected_at:
+                    if not existing.paid_detected_at and inv.get('paidAmount', 0.0) > 0:
                         vals['paid_detected_at'] = now
                     existing.write(vals)
                     record = existing

@@ -71,16 +71,23 @@ class BokioInvoicePortal(CustomerPortal):
         return values
 
     @http.route('/my/bokio-invoices', type='http', auth='user', website=True)
-    def portal_bokio_invoices(self, page=1, **kw):
+    def portal_bokio_invoices(self, page=1, partner_id=None, **kw):
         Invoice = request.env['bokio.invoice']
-        invoice_count = Invoice.search_count([])
+        domain = []
+        if partner_id and request.env.user._is_internal():
+            try:
+                domain = [('partner_id', '=', int(partner_id))]
+            except (ValueError, TypeError):
+                pass
+        invoice_count = Invoice.search_count(domain)
         pager = portal_pager(
             url='/my/bokio-invoices',
+            url_args={'partner_id': partner_id} if partner_id else {},
             total=invoice_count,
             page=page,
             step=20,
         )
-        invoices = Invoice.search([], order='issue_date desc', limit=20, offset=pager['offset'])
+        invoices = Invoice.search(domain, order='issue_date desc', limit=20, offset=pager['offset'])
         values = self._prepare_portal_layout_values()
         values.update({
             'invoices': invoices,

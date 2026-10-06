@@ -38,6 +38,7 @@
                                     <th>Förfaller</th>
                                     <th class="text-end">Belopp</th>
                                     <th class="text-end">Betalt</th>
+                                    <th class="text-end">Kvar</th>
                                     <th class="d-none d-md-table-cell">Betaldatum</th>
                                     <th>Status</th>
                                     <th></th>
@@ -52,12 +53,15 @@
                                         <td><t t-out="inv.issue_date"/></td>
                                         <td><t t-out="inv.due_date"/></td>
                                         <td class="text-end">
-                                            <t t-out="'%.2f' % inv.amount_total"/>
-                                            <small class="text-muted ms-1"><t t-out="inv.currency"/></small>
+                                            <t t-out="'{:,.0f}'.format(inv.amount_total).replace(',', ' ') + ' kr'"/>
                                         </td>
                                         <td class="text-end">
-                                            <t t-out="'%.2f' % inv.amount_paid"/>
-                                            <small class="text-muted ms-1"><t t-out="inv.currency"/></small>
+                                            <t t-out="'{:,.0f}'.format(inv.amount_paid).replace(',', ' ') + ' kr' if inv.amount_paid else ''"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-if="inv.amount_paid and inv.amount_paid &lt; inv.amount_total">
+                                                <t t-out="'{:,.0f}'.format(inv.amount_total - inv.amount_paid).replace(',', ' ') + ' kr'"/>
+                                            </t>
                                         </td>
                                         <td class="d-none d-md-table-cell">
                                             <t t-if="inv.paid_detected_at">
@@ -65,8 +69,8 @@
                                             </t>
                                         </td>
                                         <td>
-                                            <span t-attf-class="badge bg-#{status_badge.get(inv.bokio_status, 'secondary')}">
-                                                <t t-out="status_labels.get(inv.bokio_status, inv.bokio_status)"/>
+                                            <span t-attf-class="badge bg-#{status_badge.get(inv.bokio_status, 'secondary') if inv.effective_status != 'delbetald' else 'warning'}">
+                                                <t t-out="'Delbetald' if inv.effective_status == 'delbetald' else status_labels.get(inv.bokio_status, inv.bokio_status)"/>
                                             </span>
                                         </td>
                                         <td onclick="event.stopPropagation()">
@@ -107,8 +111,8 @@
                     <h5 class="mb-0">
                         Faktura <strong><t t-out="invoice.bokio_invoice_number"/></strong>
                     </h5>
-                    <span t-attf-class="badge bg-#{status_badge.get(invoice.bokio_status, 'secondary')}">
-                        <t t-out="status_labels.get(invoice.bokio_status, invoice.bokio_status)"/>
+                    <span t-attf-class="badge bg-#{status_badge.get(invoice.bokio_status, 'secondary') if invoice.effective_status != 'delbetald' else 'warning'}">
+                        <t t-out="'Delbetald' if invoice.effective_status == 'delbetald' else status_labels.get(invoice.bokio_status, invoice.bokio_status)"/>
                     </span>
                 </div>
                 <div class="card-body">
@@ -133,19 +137,22 @@
                             <dl class="row mb-0">
                                 <dt class="col-sm-5 text-muted">Totalbelopp</dt>
                                 <dd class="col-sm-7">
-                                    <strong><t t-out="'%.2f' % invoice.amount_total"/></strong>
-                                    <t t-out="invoice.currency"/>
+                                    <strong><t t-out="'{:,.0f}'.format(invoice.amount_total).replace(',', ' ') + ' kr'"/></strong>
                                 </dd>
                                 <dt class="col-sm-5 text-muted">varav moms</dt>
                                 <dd class="col-sm-7">
-                                    <t t-out="'%.2f' % invoice.amount_tax"/>
-                                    <t t-out="invoice.currency"/>
+                                    <t t-out="'{:,.0f}'.format(invoice.amount_tax).replace(',', ' ') + ' kr'"/>
                                 </dd>
                                 <dt class="col-sm-5 text-muted">Betalt</dt>
                                 <dd class="col-sm-7">
-                                    <t t-out="'%.2f' % invoice.amount_paid"/>
-                                    <t t-out="invoice.currency"/>
+                                    <t t-out="'{:,.0f}'.format(invoice.amount_paid).replace(',', ' ') + ' kr'"/>
                                 </dd>
+                                <t t-if="invoice.effective_status == 'delbetald'">
+                                    <dt class="col-sm-5 text-muted">Kvar att betala</dt>
+                                    <dd class="col-sm-7">
+                                        <strong><t t-out="'{:,.0f}'.format(invoice.amount_total - invoice.amount_paid).replace(',', ' ') + ' kr'"/></strong>
+                                    </dd>
+                                </t>
                             </dl>
                         </div>
                     </div>

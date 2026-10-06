@@ -1,0 +1,200 @@
+# Swedish translation for invoice_bokio
+# Copyright (C) 2026 Arvas International AB
+# License LGPL-3.0
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-20 00:00+0000\n"
+"PO-Revision-Date: 2026-09-20 00:00+0000\n"
+"Last-Translator: Arvas International AB <info@arvas.international>\n"
+"Language-Team: Swedish <info@arvas.international>\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: invoice_bokio
+msgid "Bokio Invoice"
+msgstr "Bokio-faktura"
+
+#. module: invoice_bokio
+msgid "Bokio Sync Log"
+msgstr "Bokio synklogg"
+
+#. module: invoice_bokio
+msgid "Bokio ID"
+msgstr "Bokio-ID"
+
+#. module: invoice_bokio
+msgid "Invoice No."
+msgstr "Fakturanr"
+
+#. module: invoice_bokio
+msgid "Customer"
+msgstr "Kund"
+
+#. module: invoice_bokio
+msgid "Total"
+msgstr "Totalt"
+
+#. module: invoice_bokio
+msgid "Tax"
+msgstr "Moms"
+
+#. module: invoice_bokio
+msgid "Paid Amount"
+msgstr "Betalt belopp"
+
+#. module: invoice_bokio
+msgid "Currency"
+msgstr "Valuta"
+
+#. module: invoice_bokio
+msgid "Invoice Date"
+msgstr "Fakturadatum"
+
+#. module: invoice_bokio
+msgid "Due Date"
+msgstr "Förfallodatum"
+
+#. module: invoice_bokio
+msgid "Published At"
+msgstr "Publicerad"
+
+#. module: invoice_bokio
+msgid "Status"
+msgstr "Status"
+
+#. module: invoice_bokio
+msgid "Draft"
+msgstr "Utkast"
+
+#. module: invoice_bokio
+msgid "Published"
+msgstr "Skickad"
+
+#. module: invoice_bokio
+msgid "Paid"
+msgstr "Betald"
+
+#. module: invoice_bokio
+msgid "Overdue"
+msgstr "Förfallen"
+
+#. module: invoice_bokio
+msgid "Overpaid"
+msgstr "Överbetald"
+
+#. module: invoice_bokio
+msgid "Credited"
+msgstr "Krediterad"
+
+#. module: invoice_bokio
+msgid "Paid Detected At"
+msgstr "Betalning registrerad"
+
+#. module: invoice_bokio
+msgid "Confirmation"
+msgstr "Bekräftelse"
+
+#. module: invoice_bokio
+msgid "Pending"
+msgstr "Väntar"
+
+#. module: invoice_bokio
+msgid "Sent"
+msgstr "Skickad"
+
+#. module: invoice_bokio
+msgid "N/A — imported as paid"
+msgstr "Ej aktuell — importerad som betald"
+
+#. module: invoice_bokio
+msgid "Confirmation Sent At"
+msgstr "Bekräftelse skickad"
+
+#. module: invoice_bokio
+msgid "PDF"
+msgstr "PDF"
+
+#. module: invoice_bokio
+msgid "Last Synced"
+msgstr "Senast synkad"
+
+#. module: invoice_bokio
+msgid "Raw JSON"
+msgstr "Rå JSON"
+
+#. module: invoice_bokio
+msgid "Sync Time"
+msgstr "Synktidpunkt"
+
+#. module: invoice_bokio
+msgid "Fetched"
+msgstr "Hämtade"
+
+#. module: invoice_bokio
+msgid "Created"
+msgstr "Skapade"
+
+#. module: invoice_bokio
+msgid "Updated"
+msgstr "Uppdaterade"
+
+#. module: invoice_bokio
+msgid "Confirmations Sent"
+msgstr "Bekräftelser skickade"
+
+#. module: invoice_bokio
+msgid "Errors"
+msgstr "Fel"
+
+#. module: invoice_bokio
+msgid "Success"
+msgstr "Lyckades"
+
+#. module: invoice_bokio
+msgid "Partial"
+msgstr "Delvis"
+
+#. module: invoice_bokio
+msgid "Failed"
+msgstr "Misslyckades"
+
+#. module: invoice_bokio
+msgid "A Bokio invoice ID must be unique."
+msgstr "Ett Bokio-faktura-ID måste vara unikt."
+
+#. module: invoice_bokio
+msgid "Bokio Invoices"
+msgstr "Bokio-fakturor"
+
+#. module: invoice_bokio
+msgid "Sync & PDF"
+msgstr "Synk & PDF"
+
+#. module: invoice_bokio
+msgid "Confirmation pending"
+msgstr "Bekräftelse väntande"
+
+#. module: invoice_bokio
+msgid "Sync Now"
+msgstr "Synkronisera nu"
+
+#. module: invoice_bokio
+msgid "Invoices"
+msgstr "Fakturor"
+
+#. module: invoice_bokio
+msgid "Sync Log"
+msgstr "Synklogg"
+
+#. module: invoice_bokio
+msgid "Bokio PDF"
+msgstr "Bokio PDF"
+
+#. module: invoice_bokio
+msgid "Bokio Sync"
+msgstr "Bokio synk"

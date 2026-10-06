@@ -4,7 +4,7 @@
   <!-- Top-level Bokio menu (shared with partner_bokio) -->
   <menuitem
     id="menu_bokio_root"
-    name="Bokio"
+    name="Bokio Invoices"
     sequence="90"/>
 
   <menuitem

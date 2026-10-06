@@ -1,0 +1,112 @@
+# Swedish translation for partner_bokio
+# Copyright (C) 2026 Arvas International AB
+# License LGPL-3.0
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-20 00:00+0000\n"
+"PO-Revision-Date: 2026-09-20 00:00+0000\n"
+"Last-Translator: Arvas International AB <info@arvas.international>\n"
+"Language-Team: Swedish <info@arvas.international>\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: partner_bokio
+msgid "Bokio UUID"
+msgstr "Bokio-UUID"
+
+#. module: partner_bokio
+msgid "Bokio Customer No."
+msgstr "Bokio kundnr"
+
+#. module: partner_bokio
+msgid "Last Synced (Bokio)"
+msgstr "Senast synkad (Bokio)"
+
+#. module: partner_bokio
+msgid "Master System"
+msgstr "Huvudsystem"
+
+#. module: partner_bokio
+msgid "Odoo only"
+msgstr "Bara Odoo"
+
+#. module: partner_bokio
+msgid "UUID assigned by Bokio for this customer."
+msgstr "UUID tilldelat av Bokio för denna kund."
+
+#. module: partner_bokio
+msgid "Visible customer number in Bokio UI (reserved — not always exposed via API)."
+msgstr "Synligt kundnummer i Bokio (reserverat — exponeras inte alltid via API)."
+
+#. module: partner_bokio
+msgid "Timestamp of the last successful sync with Bokio."
+msgstr "Tidpunkt för senaste lyckade synkronisering med Bokio."
+
+#. module: partner_bokio
+msgid "Authoritative data source for this contact.\nBokio → Odoo reads from Bokio; never overwritten by Odoo.\nOdoo → Odoo pushes to Bokio (create or update).\nOdoo only → local contact, never synced to Bokio."
+msgstr "Auktoritativ datakälla för denna kontakt.\nBokio → Odoo läser från Bokio; skrivs aldrig över av Odoo.\nOdoo → Odoo skickar till Bokio (skapar eller uppdaterar).\nBara Odoo → lokal kontakt, synkas aldrig till Bokio."
+
+#. module: partner_bokio
+msgid "Bokio kontakter"
+msgstr "Bokio-kontakter"
+
+#. module: partner_bokio
+msgid "Identification"
+msgstr "Identifikation"
+
+#. module: partner_bokio
+msgid "Sync Status"
+msgstr "Synkstatus"
+
+#. module: partner_bokio
+msgid "Sync to Bokio"
+msgstr "Synka till Bokio"
+
+#. module: partner_bokio
+msgid "Sync to Odoo"
+msgstr "Synka från Bokio"
+
+#. module: partner_bokio
+msgid "This contact is Odoo only — not synced to Bokio."
+msgstr "Den här kontakten är bara i Odoo — synkas inte till Bokio."
+
+#. module: partner_bokio
+msgid "Bokio Sync Status"
+msgstr "Bokio synkstatus"
+
+#. module: partner_bokio
+msgid "Not synced"
+msgstr "Ej synkad"
+
+#. module: partner_bokio
+msgid "Synced"
+msgstr "Synkad"
+
+#. module: partner_bokio
+msgid "Master: Bokio"
+msgstr "Huvud: Bokio"
+
+#. module: partner_bokio
+msgid "Master: Odoo"
+msgstr "Huvud: Odoo"
+
+#. module: partner_bokio
+msgid "All contacts are synced with Bokio!"
+msgstr "Alla kontakter är synkade med Bokio!"
+
+#. module: partner_bokio
+msgid "Bokio Kontakter"
+msgstr "Bokio-kontakter"
+
+#. module: partner_bokio
+msgid "Bokio Sync"
+msgstr "Bokio synk"
+
+#. module: partner_bokio
+msgid "bokio_api package not found. Make sure the repo is mounted correctly."
+msgstr "bokio_api-paketet saknas. Kontrollera att repot är monterat korrekt."
