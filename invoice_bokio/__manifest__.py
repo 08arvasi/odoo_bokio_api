@@ -17,7 +17,7 @@ Konfiguration (Settings > Technical > System Parameters):
     """,
     "author": "Arvas International AB",
     "license": "LGPL-3",
-    "url": "https://github.com/08arvasi/odoo_bokio_api",
+    "website": "https://github.com/08arvasi/odoo_bokio_api/tree/19.0/invoice_bokio",
     "category": "Invoicing",
     "depends": ["contacts", "mail", "partner_bokio"],
     "data": [
