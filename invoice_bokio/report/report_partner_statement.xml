@@ -124,10 +124,10 @@
 
         <!-- ── PAGE CONTENT  class="article"  debug: mörkblå  ─────────────── -->
         <!-- Odoo extraherar div.article som sidans brödinnehåll -->
-        <div class="article" style="border:0; padding:5mm;">
-          <div class="page" style="padding:5mm; border:0;">
+        <div class="article" style="border:0; padding:2mm 5mm 2mm 5mm;">
+          <div class="page" style="padding:2mm 0 0 0; border:0;">
 
-            <h2 style="margin-top:10px; margin-bottom:16px;">Fakturautdrag</h2>
+            <h2 style="margin-top:4px; margin-bottom:12px;">Fakturautdrag</h2>
 
             <!-- Personalized message from system parameter — only shown when overdue -->
             <div t-if="overdue and message"
