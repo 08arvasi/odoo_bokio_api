@@ -86,8 +86,8 @@
             </t>
           </div>
 
-          <!-- Kundblock: top:35mm; left:114mm matchar Ekopost destination-fönstret (121mm från papperskant - 7mm margin) -->
-          <div style="position:absolute; top:35mm; left:114mm;
+          <!-- Kundblock: top:45mm; left:124mm (Ekopost destination-fönster +10mm höger/neråt) -->
+          <div style="position:absolute; top:45mm; left:124mm;
                       text-align:left; font-size:0.88em; line-height:1.5; color:#3d2e0a;">
             <strong style="font-size:1.08em;" t-field="partner.name"/>
             <t t-if="partner.street"><br/><span t-field="partner.street"/></t>
@@ -103,9 +103,6 @@
             </t>
           </div>
 
-          <!-- Guldseparator längst ner i headerarean -->
-          <div style="position:absolute; bottom:0; left:0; right:0;
-                      border-bottom:2px solid #c8a84b;"></div>
 
         </div>
 

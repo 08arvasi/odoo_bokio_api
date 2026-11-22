@@ -1,6 +1,6 @@
 {
     "name": "Bokio Invoice Sync",
-    "version": "19.0.1.2.2",
+    "version": "19.0.1.2.3",
     "summary": "Sync invoices from Bokio — payment confirmation on paid status",
     "description": """
 Bokio Invoice Sync
