@@ -59,35 +59,36 @@
         <!-- Headerarea = margin_top 65mm; div-höjd 62mm lämnar 3mm luft mot separator -->
         <div class="header" style="position:relative; height:62mm;">
 
-          <!-- Företagsblock: logo top:8mm, adresstext 5mm under logo -->
+          <!-- Logo: top:8mm, fri från adressfönstret -->
           <div style="position:absolute; top:8mm; left:10mm;">
             <t t-if="company.logo">
               <img t-att-src="image_data_uri(company.logo)"
                    style="max-height:46px; width:auto;"/>
             </t>
-            <div style="margin-top:5mm; font-size:0.88em; line-height:1.45; color:#3d2e0a;">
-              <t t-if="company.report_header">
-                <div t-field="company.report_header"
-                     style="font-weight:bold; color:#c8a84b; font-size:1.08em; margin-bottom:1px;"/>
-              </t>
-              <div t-out="company.name"/>
-              <div t-if="company.street"  t-out="company.street"/>
-              <div t-if="company.street2" t-out="company.street2"/>
-              <t t-if="company.zip or company.city">
-                <div>
-                  <span t-if="company.zip"  t-out="company.zip"/>
-                  <t t-if="company.zip and company.city"> </t>
-                  <span t-if="company.city" t-out="company.city"/>
-                </div>
-              </t>
-              <div t-if="company.country_id" t-out="company.country_id.name"/>
-              <div t-if="company.vat">Moms: <span t-out="company.vat"/></div>
-            </div>
           </div>
 
-          <!-- Kundblock: top = logo(8mm) + logo-höjd(~12mm) + gap(5mm) = 25mm -->
-          <div style="position:absolute; top:25mm; right:10mm;
-                      text-align:right; font-size:0.88em; line-height:1.5; color:#3d2e0a;">
+          <!-- Avsändaradress: top:30mm matchar Ekopost return-to-sender-fönstret -->
+          <div style="position:absolute; top:30mm; left:10mm;
+                      font-size:0.88em; line-height:1.45; color:#3d2e0a;">
+            <t t-if="company.report_header">
+              <div t-field="company.report_header"
+                   style="font-weight:bold; color:#c8a84b; font-size:1.08em; margin-bottom:1px;"/>
+            </t>
+            <div t-out="company.name"/>
+            <div t-if="company.street"  t-out="company.street"/>
+            <div t-if="company.street2" t-out="company.street2"/>
+            <t t-if="company.zip or company.city">
+              <div>
+                <span t-if="company.zip"  t-out="company.zip"/>
+                <t t-if="company.zip and company.city"> </t>
+                <span t-if="company.city" t-out="company.city"/>
+              </div>
+            </t>
+          </div>
+
+          <!-- Kundblock: top:35mm; left:114mm matchar Ekopost destination-fönstret (121mm från papperskant - 7mm margin) -->
+          <div style="position:absolute; top:35mm; left:114mm;
+                      text-align:left; font-size:0.88em; line-height:1.5; color:#3d2e0a;">
             <strong style="font-size:1.08em;" t-field="partner.name"/>
             <t t-if="partner.street"><br/><span t-field="partner.street"/></t>
             <t t-if="partner.street2"><br/><span t-field="partner.street2"/></t>
